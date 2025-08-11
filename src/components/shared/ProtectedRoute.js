@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../services/auth';
 import LoadingSpinner from './LoadingSpinner';
 
-const ProtectedRoute = ({ children, adminOnly = false }) => {
+const ProtectedRoute = ({ children, adminOnly = false, staffOnly = false }) => {
   const { currentUser, loading, getUserData } = useAuth();
   const [userRole, setUserRole] = useState(null);
   const [roleLoading, setRoleLoading] = useState(true);
@@ -38,13 +38,23 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
     );
   }
 
-  // Redirect to login if not authenticated
+  // Redirect to appropriate login if not authenticated
   if (!currentUser) {
+    if (adminOnly) return <Navigate to="/admin/login" replace />;
+    if (staffOnly) return <Navigate to="/staff/login" replace />;
     return <Navigate to="/login" replace />;
   }
 
-  // Redirect to customer dashboard if admin access is required but user is not admin
+  // Role-based access control
   if (adminOnly && userRole !== 'admin') {
+    // Redirect based on actual role
+    if (userRole === 'staff') return <Navigate to="/staff/dashboard" replace />;
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  if (staffOnly && userRole !== 'staff') {
+    // Redirect based on actual role
+    if (userRole === 'admin') return <Navigate to="/admin/dashboard" replace />;
     return <Navigate to="/dashboard" replace />;
   }
 
