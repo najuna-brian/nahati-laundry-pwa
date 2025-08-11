@@ -265,6 +265,16 @@ export const useAsyncData = (fetchFunction, dependencies = []) => {
   return { data, loading, error, refetch };
 };
 
+/**
+ * Main useFirebase hook - wrapper for useFirestoreCollection with simplified API
+ * @param {string} collectionName - Name of the collection
+ * @param {object} options - Query options
+ * @returns {object} { data, loading, error }
+ */
+export const useFirebase = (collectionName, options = {}) => {
+  return useFirestoreCollection(collectionName, options);
+};
+
 // Export all hooks
 export default {
   useFirestoreCollection,
@@ -272,5 +282,6 @@ export default {
   useUserOrders,
   useOrdersByStatus,
   useDashboardStats,
-  useAsyncData
+  useAsyncData,
+  useFirebase
 };
