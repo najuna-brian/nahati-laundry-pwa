@@ -71,8 +71,8 @@ function App() {
   if (showInstallPrompt && !appInstalled) {
     return (
       <InstallPrompt 
-        onInstalled={handleAppInstalled}
-        onSkip={handleSkipInstall}
+        onInstall={handleAppInstalled}
+        onDismiss={handleSkipInstall}
       />
     );
   }
