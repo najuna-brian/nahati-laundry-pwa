@@ -84,15 +84,19 @@ const OrderConfirmation = () => {
             }
         }
 
-        // Generate unique order ID
-        const generatedOrderId = 'NH' + Date.now().toString().slice(-6);
-        setOrderId(generatedOrderId);
-        
-        // Save order to Firebase if we have all the data
-        if (orderData && schedulingData && user && !orderSaved) {
-            saveOrderToFirebase(generatedOrderId, orderData, schedulingData);
+        // Generate unique order ID only once
+        if (!orderId) {
+            const generatedOrderId = 'NH' + Date.now().toString().slice(-6);
+            setOrderId(generatedOrderId);
         }
-    }, [location.state, orderData, schedulingData, user, orderSaved]);
+    }, [location.state, orderId]);
+
+    // Separate useEffect for saving order to prevent loops
+    useEffect(() => {
+        if (orderData && schedulingData && user && orderId && !orderSaved) {
+            saveOrderToFirebase(orderId, orderData, schedulingData);
+        }
+    }, [orderData, schedulingData, user, orderId, orderSaved]);
 
     if (!orderData) {
         return (
