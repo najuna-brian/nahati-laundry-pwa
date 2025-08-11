@@ -1,8 +1,9 @@
-import firebase from './firebase';
+import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 import { db } from './firebase';
 import { collection, addDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 
-const messaging = firebase.messaging();
+// Get messaging instance
+const messaging = getMessaging();
 
 export const requestNotificationPermission = async () => {
     try {
@@ -20,9 +21,9 @@ export const requestNotificationPermission = async () => {
     }
 };
 
-export const getToken = async () => {
+export const getFirebaseToken = async () => {
     try {
-        const currentToken = await messaging.getToken();
+        const currentToken = await getToken(messaging);
         if (currentToken) {
             console.log('Current token for client: ', currentToken);
             return currentToken;
@@ -38,7 +39,7 @@ export const getToken = async () => {
 
 export const onMessageListener = () =>
     new Promise((resolve) => {
-        messaging.onMessage((payload) => {
+        onMessage(messaging, (payload) => {
             console.log('Message received. ', payload);
             resolve(payload);
         });

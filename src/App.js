@@ -8,7 +8,6 @@ import Dashboard from './components/customer/Dashboard';
 import ServiceSelection from './components/customer/ServiceSelection';
 import OrderDetails from './components/customer/OrderDetails';
 import Scheduling from './components/customer/Scheduling';
-import Payment from './components/customer/Payment';
 import OrderConfirmation from './components/customer/OrderConfirmation';
 import OrderTracking from './components/customer/OrderTracking';
 import MyOrders from './components/customer/MyOrders';
@@ -41,7 +40,9 @@ function App() {
                           window.matchMedia('(display-mode: standalone)').matches ||
                           localStorage.getItem('pwa-installed') === 'true';
       
-      if (isStandalone) {
+      const installSkipped = localStorage.getItem('pwa-install-skipped') === 'true';
+      
+      if (isStandalone || installSkipped) {
         setAppInstalled(true);
         setShowInstallPrompt(false);
       }

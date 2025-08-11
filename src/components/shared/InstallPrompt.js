@@ -83,6 +83,10 @@ const InstallPrompt = ({ onInstall, onDismiss }) => {
     };
 
     if (!showPrompt || isInstalled || isStandalone) {
+        // If we're here, call onDismiss to let the parent know we're not showing
+        if (onDismiss && !isInstalled && !isStandalone) {
+            setTimeout(() => onDismiss(), 100);
+        }
         return null;
     }
 
