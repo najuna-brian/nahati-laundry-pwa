@@ -3,33 +3,38 @@
 ## GitHub Repository Setup
 
 1. **Create GitHub Repository**:
+
    - Go to [GitHub](https://github.com) and create a new repository
    - Name it: `nahati-laundry-pwa`
    - Don't initialize with README (we already have one)
 
 2. **Connect Local Repository**:
    ```bash
-   git remote add origin https://github.com/YOUR_USERNAME/nahati-laundry-pwa.git
+   git remote add origin https://github.com/najuna-brian/nahati-laundry-pwa.git
    git push -u origin main
    ```
 
 ## Firebase Hosting Deployment
 
 ### Prerequisites
+
 - Firebase CLI installed: `npm install -g firebase-tools`
 - Firebase project created (you already have: `nahati-laundry-app`)
 
 ### Setup Steps
 
 1. **Login to Firebase**:
+
    ```bash
    firebase login
    ```
 
 2. **Initialize Firebase Hosting**:
+
    ```bash
    firebase init hosting
    ```
+
    - Select your existing project: `nahati-laundry-app`
    - Public directory: `build`
    - Single-page app: `Yes`
@@ -44,6 +49,7 @@
 ### Environment Variables for Production
 
 1. **Copy environment template**:
+
    ```bash
    cp .env.production.template .env.production
    ```
@@ -56,6 +62,7 @@
 ### Custom Domain (Optional)
 
 1. **Add domain in Firebase Console**:
+
    - Go to Firebase Console > Hosting
    - Add custom domain: `nahati.com` or `app.nahati.com`
 
@@ -64,6 +71,7 @@
 ### Continuous Deployment
 
 Set up GitHub Actions for automatic deployment:
+
 - Create `.github/workflows/deploy.yml`
 - Configure Firebase service account
 - Auto-deploy on push to main branch
@@ -71,6 +79,7 @@ Set up GitHub Actions for automatic deployment:
 ## 📱 PWA Features
 
 Your app will be installable on mobile devices with:
+
 - ✅ Web App Manifest
 - ✅ Service Worker
 - ✅ HTTPS (automatic with Firebase)
@@ -90,6 +99,7 @@ Your app will be installable on mobile devices with:
 ## 📞 Support
 
 For deployment issues:
+
 - Check Firebase Console logs
 - Verify environment variables
 - Test locally with `npm start`
