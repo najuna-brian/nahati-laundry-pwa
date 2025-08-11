@@ -1,12 +1,71 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { db } from '../../services/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useAuth } from '../../services/auth';
 
 const OrderConfirmation = () => {
     const location = useLocation();
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [orderData, setOrderData] = useState(null);
     const [schedulingData, setSchedulingData] = useState(null);
     const [orderId, setOrderId] = useState('');
+    const [orderSaved, setOrderSaved] = useState(false);
+
+    // Function to save order to Firebase
+    const saveOrderToFirebase = async (orderId, orderData, schedulingData) => {
+        if (!user || orderSaved) return;
+
+        try {
+            const orderRecord = {
+                orderId: orderId,
+                userId: user.uid,
+                userEmail: user.email || 'guest@nahati.com',
+                userName: user.displayName || 'Guest User',
+                
+                // Service details
+                service: orderData.service,
+                weight: orderData.weight,
+                addOns: orderData.addOns || [],
+                specialInstructions: orderData.specialInstructions || '',
+                photos: [], // Photos would need special handling for Firebase Storage
+                estimatedTotal: orderData.total || 0,
+                
+                // Scheduling details
+                pickupDate: schedulingData.pickupDate,
+                pickupTimeRange: schedulingData.pickupTimeRange,
+                pickupPreferredTime: schedulingData.pickupPreferredTime || '',
+                deliveryDate: schedulingData.deliveryDate,
+                deliveryTimeRange: schedulingData.deliveryTimeRange,
+                deliveryPreferredTime: schedulingData.deliveryPreferredTime || '',
+                
+                // Order status
+                status: 'pending',
+                paymentOnDelivery: true,
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp(),
+                
+                // Additional fields
+                actualWeight: null,
+                finalPrice: null,
+                paymentStatus: 'pending',
+                notes: []
+            };
+
+            const docRef = await addDoc(collection(db, 'orders'), orderRecord);
+            console.log('Order saved to Firebase with ID: ', docRef.id);
+            setOrderSaved(true);
+            
+            // Also save to localStorage for immediate access
+            const savedOrders = JSON.parse(localStorage.getItem('userOrders') || '[]');
+            savedOrders.unshift({ ...orderRecord, id: docRef.id });
+            localStorage.setItem('userOrders', JSON.stringify(savedOrders));
+            
+        } catch (error) {
+            console.error('Error saving order to Firebase: ', error);
+        }
+    };
 
     useEffect(() => {
         // Try to get data from location.state first (for backward compatibility)
@@ -28,7 +87,12 @@ const OrderConfirmation = () => {
         // Generate unique order ID
         const generatedOrderId = 'NH' + Date.now().toString().slice(-6);
         setOrderId(generatedOrderId);
-    }, [location.state]);
+        
+        // Save order to Firebase if we have all the data
+        if (orderData && schedulingData && user && !orderSaved) {
+            saveOrderToFirebase(generatedOrderId, orderData, schedulingData);
+        }
+    }, [location.state, orderData, schedulingData, user, orderSaved]);
 
     if (!orderData) {
         return (
