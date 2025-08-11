@@ -2,14 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { collection, query, where, orderBy, onSnapshot, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useAuth } from '../../services/auth';
+import { notificationService } from '../../services/notificationService';
 import StaffNavigation from './StaffNavigation';
 import ErrorBoundary from '../shared/ErrorBoundary';
+import NotificationBell from '../shared/NotificationBell';
+import OrderDetails from './OrderDetails';
 
 const StaffDashboard = () => {
   const { user } = useAuth();
   const [orders, setOrders] = useState([]);
+  const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedTab, setSelectedTab] = useState('pending');
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -21,7 +26,7 @@ const StaffDashboard = () => {
       orderBy('createdAt', 'desc')
     );
 
-    const unsubscribe = onSnapshot(
+    const unsubscribeOrders = onSnapshot(
       ordersQuery,
       (snapshot) => {
         const ordersData = snapshot.docs.map(doc => ({
@@ -38,7 +43,20 @@ const StaffDashboard = () => {
       }
     );
 
-    return () => unsubscribe();
+    // Listen to notifications for staff
+    const unsubscribeNotifications = notificationService.listenToNotifications(
+      user.uid,
+      (notifications) => {
+        setNotifications(notifications);
+      }
+    );
+
+    return () => {
+      unsubscribeOrders();
+      if (unsubscribeNotifications) {
+        unsubscribeNotifications();
+      }
+    };
   }, [user]);
 
   const updateOrderStatus = async (orderId, newStatus) => {
@@ -134,9 +152,21 @@ const StaffDashboard = () => {
         <StaffNavigation />
         
         <div className="p-6">
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Staff Dashboard</h1>
-            <p className="text-gray-600">Welcome back! Here's your daily overview.</p>
+          <div className="mb-6 flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">Staff Dashboard</h1>
+              <p className="text-gray-600">Welcome back! Here's your daily overview.</p>
+            </div>
+            <div className="flex items-center space-x-4">
+              <NotificationBell 
+                notifications={notifications}
+                onNotificationClick={(notification) => {
+                  if (notification.data?.orderId) {
+                    setSelectedOrderId(notification.data.orderId);
+                  }
+                }}
+              />
+            </div>
           </div>
 
           {/* Stats Cards */}
@@ -244,20 +274,26 @@ const StaffDashboard = () => {
                         <div className="flex-1">
                           <div className="flex items-center space-x-4">
                             <div>
-                              <h3 className="text-lg font-medium text-gray-900">Order #{order.id.slice(-6)}</h3>
-                              <p className="text-sm text-gray-600">{order.customerName}</p>
+                              <h3 className="text-lg font-medium text-gray-900">Order #{order.orderId || order.id.slice(-6)}</h3>
+                              <p className="text-sm text-gray-600">{order.customerName || order.userName}</p>
                             </div>
                             <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(order.status)}`}>
                               {getStatusText(order.status)}
                             </span>
                           </div>
                           <div className="mt-2 text-sm text-gray-600">
-                            <p>Items: {order.items?.map(item => `${item.quantity}x ${item.type}`).join(', ')}</p>
-                            <p>Total: ${order.total?.toFixed(2)}</p>
-                            <p>Address: {order.pickupAddress}</p>
+                            <p>Service: {order.service?.name || 'Not specified'}</p>
+                            <p>Created: {order.createdAt?.toDate?.()?.toLocaleDateString() || 'Just now'}</p>
+                            <p>Pickup: {order.pickupDate || 'Not scheduled'}</p>
                           </div>
                         </div>
                         <div className="flex space-x-2">
+                          <button
+                            onClick={() => setSelectedOrderId(order.id)}
+                            className="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700"
+                          >
+                            View Details
+                          </button>
                           {order.status === 'pending' && (
                             <button
                               onClick={() => updateOrderStatus(order.id, 'picked_up')}
@@ -299,6 +335,17 @@ const StaffDashboard = () => {
             </div>
           </div>
         </div>
+        
+        {/* Order Details Modal */}
+        {selectedOrderId && (
+          <OrderDetails 
+            orderId={selectedOrderId}
+            onClose={() => setSelectedOrderId(null)}
+            onStatusUpdate={() => {
+              // Refresh handled by real-time listener
+            }}
+          />
+        )}
       </div>
     </ErrorBoundary>
   );

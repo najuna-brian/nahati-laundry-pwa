@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { db } from '../../services/firebase';
 import { collection, addDoc, doc, setDoc } from 'firebase/firestore';
+import { notificationService } from '../../services/notificationService';
 
 const StaffCustomerRegistration = () => {
   const [formData, setFormData] = useState({
@@ -129,6 +130,20 @@ const StaffCustomerRegistration = () => {
 
       // Generate invitation link
       const invitationLink = `${window.location.origin}/customer-invitation/${invitationCode}`;
+      
+      // Send notification to all admins about new customer registration
+      await notificationService.sendToAdmins({
+        type: 'customer_registration',
+        title: 'New Customer Registered',
+        message: `${formData.name} has been registered by staff`,
+        priority: 'normal',
+        data: {
+          customerName: formData.name,
+          customerPhone: formData.phone,
+          orderNumber: orderNumber,
+          invitationCode: invitationCode
+        }
+      });
       
       setSuccess({
         customerName: formData.name,

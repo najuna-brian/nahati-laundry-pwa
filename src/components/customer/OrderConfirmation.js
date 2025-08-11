@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { db } from '../../services/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '../../services/auth';
+import { notificationService } from '../../services/notificationService';
 
 const OrderConfirmation = () => {
     const location = useLocation();
@@ -56,6 +57,24 @@ const OrderConfirmation = () => {
             const docRef = await addDoc(collection(db, 'orders'), orderRecord);
             console.log('Order saved to Firebase with ID: ', docRef.id);
             setOrderSaved(true);
+            
+            // Send notifications to all staff and admins
+            await notificationService.sendToAllStaffAndAdmins({
+                type: 'new_order',
+                title: 'New Order Received',
+                message: `Order #${orderId} from ${user.displayName || user.email}`,
+                orderId: orderId,
+                priority: 'high',
+                data: {
+                    orderId: orderId,
+                    customerName: user.displayName || user.email,
+                    service: orderData.service?.name,
+                    pickupDate: schedulingData.pickupDate
+                }
+            });
+
+            // Schedule reminder for 2 minutes if not viewed
+            notificationService.scheduleReminder(orderId, docRef.id);
             
             // Also save to localStorage for immediate access
             const savedOrders = JSON.parse(localStorage.getItem('userOrders') || '[]');

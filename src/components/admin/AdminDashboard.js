@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getOrders, getMetrics } from '../../services/firestore';
+import { notificationService } from '../../services/notificationService';
+import { useAuth } from '../../services/auth';
 import LoadingSpinner from '../shared/LoadingSpinner';
+import NotificationBell from '../shared/NotificationBell';
 
 const AdminDashboard = () => {
+    const { user } = useAuth();
     const [orders, setOrders] = useState([]);
     const [metrics, setMetrics] = useState(null);
+    const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -23,7 +28,23 @@ const AdminDashboard = () => {
         };
 
         fetchData();
-    }, []);
+        
+        // Listen to admin notifications
+        if (user) {
+            const unsubscribeNotifications = notificationService.listenToNotifications(
+                user.uid,
+                (notifications) => {
+                    setNotifications(notifications);
+                }
+            );
+
+            return () => {
+                if (unsubscribeNotifications) {
+                    unsubscribeNotifications();
+                }
+            };
+        }
+    }, [user]);
 
     if (loading) {
         return <LoadingSpinner />;
@@ -34,11 +55,18 @@ const AdminDashboard = () => {
             {/* Admin Header with Logo */}
             <div className="bg-white shadow-sm mb-6">
                 <div className="px-6 py-4">
-                    <div className="flex items-center justify-center mb-4">
+                    <div className="flex items-center justify-between mb-4">
                         <img 
                             src="/icons/default.svg" 
                             alt="Nahati Anytime Laundry" 
                             className="h-16 w-auto"
+                        />
+                        <NotificationBell 
+                            notifications={notifications}
+                            onNotificationClick={(notification) => {
+                                // Handle notification click - could navigate to relevant section
+                                console.log('Admin notification clicked:', notification);
+                            }}
                         />
                     </div>
                     <div className="text-center">
