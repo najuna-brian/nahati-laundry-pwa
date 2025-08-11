@@ -7,9 +7,7 @@ import {
   where, 
   orderBy, 
   limit,
-  onSnapshot,
-  startAfter,
-  endBefore 
+  onSnapshot
 } from 'firebase/firestore';
 import { db } from './firebase';
 
@@ -366,17 +364,12 @@ export const searchOrders = async (searchTerm) => {
   }
 };
 
-export default {
-  // Real-time listeners
-  listenToCollection,
-  listenToDocument,
-  listenToUserOrders,
-  listenToOrdersByStatus,
-  listenToUserProfile,
-  
-  // One-time data fetching
+// Export specific functions - removing duplicate exports since functions are already exported individually above
+const dataReaderService = {
   getCollectionData,
   getDocumentById,
+  listenToCollection,
+  listenToDocument,
   getUserOrders,
   getOrdersByStatus,
   getRecentOrders,
@@ -385,3 +378,5 @@ export default {
   getDashboardStats,
   searchOrders
 };
+
+export default dataReaderService;

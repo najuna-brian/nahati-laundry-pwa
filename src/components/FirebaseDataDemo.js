@@ -1,14 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   useFirestoreCollection, 
-  useFirestoreDocument, 
-  useUserOrders, 
   useDashboardStats 
 } from '../hooks/useFirebase';
 import { 
-  getCollectionData, 
-  getDocumentById, 
-  listenToCollection,
   searchOrders 
 } from '../services/dataReader';
 import { addAllSampleData, addRandomOrders } from '../services/testData';

@@ -6,16 +6,22 @@ const AdminLogin = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-    const { signInWithEmail } = useAuth();
+    const { loginWithRole } = useAuth();
 
     const handleLogin = async (e) => {
         e.preventDefault();
+        setLoading(true);
+        setError('');
+        
         try {
-            await signInWithEmail(email, password);
+            await loginWithRole(email, password, 'admin');
             navigate('/admin/dashboard');
         } catch (err) {
             setError(err.message);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -62,9 +68,10 @@ const AdminLogin = () => {
                     <div>
                         <button
                             type="submit"
-                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            disabled={loading}
+                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            Sign in
+                            {loading ? 'Signing in...' : 'Sign in'}
                         </button>
                     </div>
                 </form>

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './services/auth';
 import Layout from './components/shared/Layout';
+import ProtectedRoute from './components/shared/ProtectedRoute';
+import ErrorBoundary from './components/shared/ErrorBoundary';
 import SplashScreen from './components/customer/SplashScreen';
 import LoginSignup from './components/customer/LoginSignup';
 import Dashboard from './components/customer/Dashboard';
@@ -14,14 +16,7 @@ import MyOrders from './components/customer/MyOrders';
 import LocationContact from './components/customer/LocationContact';
 import Profile from './components/customer/Profile';
 import AdminLogin from './components/admin/AdminLogin';
-import AdminDashboard from './components/admin/AdminDashboard';
-import OrderManagement from './components/admin/OrderManagement';
-import CustomerManagement from './components/admin/CustomerManagement';
-import Inventory from './components/admin/Inventory';
-import DeliveryManagement from './components/admin/DeliveryManagement';
-import Reports from './components/admin/Reports';
-import NotificationCenter from './components/admin/NotificationCenter';
-import StaffCustomerRegistration from './components/admin/StaffCustomerRegistration';
+import AdminRoutes from './components/admin/AdminRoutes';
 import CustomerInvitation from './components/customer/CustomerInvitation';
 import FirebaseDataDemo from './components/FirebaseDataDemo';
 import FirebaseSetup from './components/FirebaseSetup';
@@ -82,37 +77,37 @@ function App() {
   }
 
   return (
-    <AuthProvider>
-      <Router>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/login" element={<LoginSignup />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/services" element={<ServiceSelection />} />
-            <Route path="/order-details" element={<OrderDetails />} />
-            <Route path="/scheduling" element={<Scheduling />} />
-            <Route path="/order-confirmation" element={<OrderConfirmation />} />
-            <Route path="/order-tracking" element={<OrderTracking />} />
-            <Route path="/my-orders" element={<MyOrders />} />
-            <Route path="/location-contact" element={<LocationContact />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/firebase-setup" element={<FirebaseSetup />} />
-            <Route path="/firebase-demo" element={<FirebaseDataDemo />} />
-            <Route path="/admin/login" element={<AdminLogin />} />
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
-            <Route path="/admin/orders" element={<OrderManagement />} />
-            <Route path="/admin/customers" element={<CustomerManagement />} />
-            <Route path="/admin/inventory" element={<Inventory />} />
-            <Route path="/admin/delivery" element={<DeliveryManagement />} />
-            <Route path="/admin/reports" element={<Reports />} />
-            <Route path="/admin/notifications" element={<NotificationCenter />} />
-            <Route path="/admin/register-customer" element={<StaffCustomerRegistration />} />
-            <Route path="/customer-invitation/:invitationCode" element={<CustomerInvitation />} />
-          </Routes>
-        </Layout>
-      </Router>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <Router>
+          <Layout>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/login" element={<LoginSignup />} />
+              <Route path="/services" element={<ServiceSelection />} />
+              <Route path="/firebase-setup" element={<FirebaseSetup />} />
+              <Route path="/firebase-demo" element={<FirebaseDataDemo />} />
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/customer-invitation/:invitationCode" element={<CustomerInvitation />} />
+              
+              {/* Protected customer routes */}
+              <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/order-details" element={<ProtectedRoute><OrderDetails /></ProtectedRoute>} />
+              <Route path="/scheduling" element={<ProtectedRoute><Scheduling /></ProtectedRoute>} />
+              <Route path="/order-confirmation" element={<ProtectedRoute><OrderConfirmation /></ProtectedRoute>} />
+              <Route path="/order-tracking" element={<ProtectedRoute><OrderTracking /></ProtectedRoute>} />
+              <Route path="/my-orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
+              <Route path="/location-contact" element={<ProtectedRoute><LocationContact /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              
+              {/* Protected admin routes */}
+              <Route path="/admin/*" element={<ProtectedRoute adminOnly><AdminRoutes /></ProtectedRoute>} />
+            </Routes>
+          </Layout>
+        </Router>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

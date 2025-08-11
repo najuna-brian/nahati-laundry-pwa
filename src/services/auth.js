@@ -86,6 +86,26 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const loginWithRole = async (email, password, expectedRole = 'customer') => {
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      
+      // Get user data to check role
+      const userData = await getUserData(user.uid);
+      
+      if (expectedRole === 'admin' && userData?.role !== 'admin') {
+        await signOut(auth);
+        throw new Error('Access denied: Admin privileges required');
+      }
+      
+      return user;
+    } catch (error) {
+      console.error("Error during role-based login:", error);
+      throw error;
+    }
+  };
+
   const logout = async () => {
     try {
       await signOut(auth);
@@ -119,7 +139,9 @@ export const AuthProvider = ({ children }) => {
     signInWithGoogle,
     registerWithEmail,
     loginWithEmail,
+    loginWithRole,
     signInWithEmail: loginWithEmail, // Alias for admin login
+    signInWithRole: loginWithRole, // Alias for role-based login
     logout,
     getUserData
   };

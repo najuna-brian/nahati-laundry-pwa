@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../../services/firebase';
 import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../services/firebase';
 
 const CustomerInvitation = () => {
@@ -21,11 +21,7 @@ const CustomerInvitation = () => {
     confirmPassword: ''
   });
 
-  useEffect(() => {
-    verifyInvitationCode();
-  }, [invitationCode]);
-
-  const verifyInvitationCode = async () => {
+  const verifyInvitationCode = useCallback(async () => {
     try {
       // Check for orders with this invitation code
       const orderQuery = query(
@@ -75,7 +71,11 @@ const CustomerInvitation = () => {
       setError('Failed to verify invitation. Please try again.');
       setLoading(false);
     }
-  };
+  }, [invitationCode]);
+
+  useEffect(() => {
+    verifyInvitationCode();
+  }, [verifyInvitationCode]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { getOrders, getMetrics } from '../../services/firestore';
 import LoadingSpinner from '../shared/LoadingSpinner';
 
@@ -57,9 +58,9 @@ const AdminDashboard = () => {
                                 <h3 className="text-lg font-semibold">📋 Order Management</h3>
                                 <p className="text-blue-100 text-sm">View and manage all orders</p>
                             </div>
-                            <a href="/admin/orders" className="bg-white text-blue-600 px-4 py-2 rounded-lg font-semibold hover:bg-blue-50">
+                            <Link to="/admin/orders" className="bg-white text-blue-600 px-4 py-2 rounded-lg font-semibold hover:bg-blue-50">
                                 View
-                            </a>
+                            </Link>
                         </div>
                     </div>
                     
@@ -69,9 +70,9 @@ const AdminDashboard = () => {
                                 <h3 className="text-lg font-semibold">👥 Customer Management</h3>
                                 <p className="text-green-100 text-sm">Manage customer accounts</p>
                             </div>
-                            <a href="/admin/customers" className="bg-white text-green-600 px-4 py-2 rounded-lg font-semibold hover:bg-green-50">
+                            <Link to="/admin/customers" className="bg-white text-green-600 px-4 py-2 rounded-lg font-semibold hover:bg-green-50">
                                 View
-                            </a>
+                            </Link>
                         </div>
                     </div>
                     
@@ -81,9 +82,9 @@ const AdminDashboard = () => {
                                 <h3 className="text-lg font-semibold">📱 Notifications</h3>
                                 <p className="text-purple-100 text-sm">Send customer notifications</p>
                             </div>
-                            <a href="/admin/notifications" className="bg-white text-purple-600 px-4 py-2 rounded-lg font-semibold hover:bg-purple-50">
+                            <Link to="/admin/notifications" className="bg-white text-purple-600 px-4 py-2 rounded-lg font-semibold hover:bg-purple-50">
                                 Send
-                            </a>
+                            </Link>
                         </div>
                     </div>
                     
@@ -93,9 +94,9 @@ const AdminDashboard = () => {
                                 <h3 className="text-lg font-semibold">➕ Register Customer</h3>
                                 <p className="text-orange-100 text-sm">Add walk-in customers</p>
                             </div>
-                            <a href="/admin/register-customer" className="bg-white text-orange-600 px-4 py-2 rounded-lg font-semibold hover:bg-orange-50">
+                            <Link to="/admin/register-customer" className="bg-white text-orange-600 px-4 py-2 rounded-lg font-semibold hover:bg-orange-50">
                                 Register
-                            </a>
+                            </Link>
                         </div>
                     </div>
                     
@@ -105,9 +106,9 @@ const AdminDashboard = () => {
                                 <h3 className="text-lg font-semibold">📊 Reports</h3>
                                 <p className="text-red-100 text-sm">View business analytics</p>
                             </div>
-                            <a href="/admin/reports" className="bg-white text-red-600 px-4 py-2 rounded-lg font-semibold hover:bg-red-50">
+                            <Link to="/admin/reports" className="bg-white text-red-600 px-4 py-2 rounded-lg font-semibold hover:bg-red-50">
                                 View
-                            </a>
+                            </Link>
                         </div>
                     </div>
                     
@@ -117,9 +118,9 @@ const AdminDashboard = () => {
                                 <h3 className="text-lg font-semibold">🚚 Delivery</h3>
                                 <p className="text-teal-100 text-sm">Manage deliveries</p>
                             </div>
-                            <a href="/admin/delivery" className="bg-white text-teal-600 px-4 py-2 rounded-lg font-semibold hover:bg-teal-50">
+                            <Link to="/admin/delivery" className="bg-white text-teal-600 px-4 py-2 rounded-lg font-semibold hover:bg-teal-50">
                                 Manage
-                            </a>
+                            </Link>
                         </div>
                     </div>
                 </div>

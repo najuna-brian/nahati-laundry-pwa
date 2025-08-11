@@ -3,6 +3,14 @@ import { useNavigate } from 'react-router-dom';
 
 const Scheduling = () => {
   const navigate = useNavigate();
+  
+  // Location state variables
+  const [pickupLocationMethod, setPickupLocationMethod] = useState(''); // 'current', 'maps', 'manual'
+  const [pickupAddress, setPickupAddress] = useState('');
+  const [pickupCoordinates, setPickupCoordinates] = useState(null);
+  const [locationLoading, setLocationLoading] = useState(false);
+  
+  // Existing scheduling state variables
   const [pickupDate, setPickupDate] = useState('');
   const [pickupTimeRange, setPickupTimeRange] = useState('');
   const [pickupPreferredTime, setPickupPreferredTime] = useState('');
@@ -16,15 +24,64 @@ const Scheduling = () => {
     { value: 'evening', label: 'Evening (4:00 PM - 8:00 PM)' }
   ];
 
+  // Location handling functions
+  const getCurrentLocation = () => {
+    setLocationLoading(true);
+    setPickupLocationMethod('current');
+    
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          setPickupCoordinates({ lat, lng });
+          
+          // For now, just set coordinates as address
+          // In production, you'd use Google Geocoding API
+          setPickupAddress(`Location: ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+          setLocationLoading(false);
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+          alert('Unable to get your current location. Please try manual entry or search.');
+          setLocationLoading(false);
+          setPickupLocationMethod('');
+        }
+      );
+    } else {
+      alert('Geolocation is not supported by this browser. Please use manual entry.');
+      setLocationLoading(false);
+      setPickupLocationMethod('');
+    }
+  };
+
+  const openGoogleMaps = () => {
+    setPickupLocationMethod('maps');
+    // For now, we'll use a simple Google Maps search URL
+    const mapsUrl = `https://maps.google.com/?q=Kampala,Uganda`;
+    window.open(mapsUrl, '_blank');
+    alert('Please copy your selected location address and paste it in the manual entry field below.');
+  };
+
+  const handleManualAddress = (address) => {
+    if (address.trim()) {
+      setPickupLocationMethod('manual');
+      setPickupAddress(address.trim());
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!pickupDate || !pickupTimeRange || !deliveryDate || !deliveryTimeRange) {
-      alert('Please fill in all required fields');
+    if (!pickupAddress || !pickupDate || !pickupTimeRange || !deliveryDate || !deliveryTimeRange) {
+      alert('Please fill in all required fields including pickup location');
       return;
     }
 
     // Store scheduling data
     const schedulingData = {
+      pickupAddress,
+      pickupCoordinates,
+      pickupLocationMethod,
       pickupDate,
       pickupTimeRange,
       pickupPreferredTime,
@@ -55,13 +112,121 @@ const Scheduling = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="px-4 py-6 space-y-6">
+        {/* Location Selection Section */}
+        <div className="bg-white rounded-xl p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <svg className="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            Step 1: Pickup Location
+          </h2>
+          
+          {!pickupAddress ? (
+            <div className="space-y-4">
+              <p className="text-gray-600 mb-4">Choose how you'd like to set your pickup location:</p>
+              
+              {/* GPS Current Location */}
+              <button
+                type="button"
+                onClick={getCurrentLocation}
+                disabled={locationLoading}
+                className="w-full p-4 border-2 border-dashed border-blue-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors disabled:opacity-50"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white">
+                    📍
+                  </div>
+                  <div className="text-left flex-1">
+                    <div className="font-medium text-gray-800">
+                      {locationLoading ? 'Getting your location...' : 'Use Current Location (GPS)'}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {locationLoading ? 'Please wait...' : 'Get your current location automatically'}
+                    </div>
+                  </div>
+                </div>
+              </button>
+
+              {/* Google Maps Search */}
+              <button
+                type="button"
+                onClick={openGoogleMaps}
+                className="w-full p-4 border-2 border-dashed border-green-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white">
+                    🗺️
+                  </div>
+                  <div className="text-left flex-1">
+                    <div className="font-medium text-gray-800">Search on Google Maps</div>
+                    <div className="text-sm text-gray-600">
+                      Search and select your location on the map
+                    </div>
+                  </div>
+                </div>
+              </button>
+
+              {/* Manual Address Entry */}
+              <div className="border-2 border-dashed border-orange-300 rounded-lg p-4">
+                <div className="flex items-center space-x-3 mb-3">
+                  <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white">
+                    ✏️
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-medium text-gray-800">Enter Address Manually</div>
+                    <div className="text-sm text-gray-600">
+                      Type your pickup address
+                    </div>
+                  </div>
+                </div>
+                <textarea
+                  placeholder="Enter your pickup address (e.g., Plot 123, Kampala Road, Central Division, Kampala)"
+                  className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  rows="3"
+                  onChange={(e) => handleManualAddress(e.target.value)}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="bg-green-50 p-4 rounded-lg border border-green-300">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="font-medium text-gray-800 mb-1">Selected Pickup Location:</div>
+                  <div className="text-gray-700 mb-2">{pickupAddress}</div>
+                  <div className="text-sm text-green-600 flex items-center">
+                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Location confirmed - {pickupLocationMethod === 'current' ? 'GPS' : pickupLocationMethod === 'maps' ? 'Maps' : 'Manual'}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPickupAddress('');
+                    setPickupLocationMethod('');
+                    setPickupCoordinates(null);
+                  }}
+                  className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 transition-colors"
+                >
+                  Change
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Only show scheduling sections if location is selected */}
+        {pickupAddress && (
+          <>
         {/* Pickup Scheduling */}
         <div className="bg-white rounded-xl p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
             <svg className="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
-            Pickup Schedule
+            Step 2: Pickup Schedule
           </h2>
 
           <div className="space-y-4">
@@ -225,14 +390,18 @@ const Scheduling = () => {
             </div>
           </div>
         </div>
+        </>
+        )}
 
-        {/* Continue Button */}
+        {/* Submit button - only show if location is selected */}
+        {pickupAddress && (
         <button
           type="submit"
           className="btn-primary w-full"
         >
           Confirm Order Details
         </button>
+        )}
       </form>
     </div>
   );

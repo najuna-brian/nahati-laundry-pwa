@@ -1,9 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   listenToCollection, 
   listenToDocument, 
-  getCollectionData, 
-  getDocumentById,
   getUserOrders,
   getOrdersByStatus,
   getDashboardStats
@@ -22,22 +20,31 @@ export const useFirestoreCollection = (collectionName, options = {}) => {
   const unsubscribeRef = useRef(null);
 
   useEffect(() => {
+    if (!collectionName) return;
+
     setLoading(true);
     setError(null);
-
-    const handleData = (documents, err) => {
-      if (err) {
-        setError(err.message);
-        setData([]);
-      } else {
-        setData(documents || []);
-        setError(null);
-      }
-      setLoading(false);
-    };
-
+    
     // Set up real-time listener
-    unsubscribeRef.current = listenToCollection(collectionName, handleData, options);
+    const unsubscribe = listenToCollection(
+      collectionName,
+      options,
+      (snapshot) => {
+        const docs = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setData(docs);
+        setLoading(false);
+      },
+      (error) => {
+        console.error('Error listening to collection:', error);
+        setError(error.message);
+        setLoading(false);
+      }
+    );
+
+    unsubscribeRef.current = unsubscribe;
 
     // Cleanup function
     return () => {
@@ -45,7 +52,7 @@ export const useFirestoreCollection = (collectionName, options = {}) => {
         unsubscribeRef.current();
       }
     };
-  }, [collectionName, JSON.stringify(options)]);
+  }, [collectionName, options]);
 
   return { data, loading, error };
 };
@@ -173,7 +180,7 @@ export const useOrdersByStatus = (status) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const refreshOrders = async () => {
+  const refreshOrders = useCallback(async () => {
     if (!status) return;
     
     setLoading(true);
@@ -190,11 +197,11 @@ export const useOrdersByStatus = (status) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [status]);
 
   useEffect(() => {
     refreshOrders();
-  }, [status]);
+  }, [refreshOrders]);
 
   return { orders, loading, error, refreshOrders };
 };
@@ -243,7 +250,7 @@ export const useAsyncData = (fetchFunction, dependencies = []) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const refetch = async () => {
+  const refetch = useCallback(async () => {
     setLoading(true);
     setError(null);
     
@@ -256,11 +263,12 @@ export const useAsyncData = (fetchFunction, dependencies = []) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchFunction]);
 
   useEffect(() => {
     refetch();
-  }, dependencies);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refetch, fetchFunction, ...dependencies]);
 
   return { data, loading, error, refetch };
 };
@@ -276,7 +284,7 @@ export const useFirebase = (collectionName, options = {}) => {
 };
 
 // Export all hooks
-export default {
+const firebaseHooks = {
   useFirestoreCollection,
   useFirestoreDocument,
   useUserOrders,
@@ -285,3 +293,5 @@ export default {
   useAsyncData,
   useFirebase
 };
+
+export default firebaseHooks;

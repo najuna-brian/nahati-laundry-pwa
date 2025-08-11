@@ -1,16 +1,26 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../services/auth';
 
 const Navigation = () => {
   const location = useLocation();
-  const { currentUser } = useAuth();
+  const navigate = useNavigate();
+  const { currentUser, logout } = useAuth();
   
   const isAdmin = location.pathname.startsWith('/admin');
 
   if (isAdmin) {
     return null; // Admin pages have their own navigation
   }
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
 
   const navigationItems = [
     {
@@ -76,7 +86,7 @@ const Navigation = () => {
             to={item.path}
             className={`flex flex-col items-center justify-center flex-1 h-full transition-all duration-300 transform relative ${
               isActive(item.path)
-                ? 'text-blue-600 bg-blue-50 scale-105'
+                ? 'text-blue-600 scale-105'
                 : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 active:scale-95'
             }`}
             style={{
@@ -107,6 +117,24 @@ const Navigation = () => {
             </div>
           </Link>
         ))}
+        
+        {/* Logout button */}
+        <button
+          onClick={handleLogout}
+          className="flex flex-col items-center justify-center flex-1 h-full transition-all duration-300 transform relative text-gray-500 hover:text-red-600 hover:bg-gray-50 active:scale-95"
+          style={{
+            willChange: 'transform'
+          }}
+        >
+          <div className="mb-1">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+          </div>
+          <span className="text-xs font-medium">
+            Logout
+          </span>
+        </button>
       </div>
     </nav>
   );

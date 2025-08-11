@@ -1,11 +1,10 @@
 import { 
-  getAuth, 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
   updateProfile 
 } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import { addAllSampleData } from './testData';
 
@@ -229,7 +228,7 @@ export const sendAdminPasswordReset = async (email) => {
   }
 };
 
-export default {
+const firebaseSetupService = {
   testFirebaseConnection,
   createAdminUser,
   completeFirebaseSetup,
@@ -237,3 +236,5 @@ export default {
   getFirebaseProjectInfo,
   sendAdminPasswordReset
 };
+
+export default firebaseSetupService;

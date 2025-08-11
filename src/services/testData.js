@@ -267,10 +267,12 @@ export const addRandomOrders = async (count = 5) => {
   }
 };
 
-export default {
+const testDataService = {
   addSampleUsers,
   addSampleOrders,
   addAllSampleData,
   addRandomOrders,
   generateRandomOrder
 };
+
+export default testDataService;

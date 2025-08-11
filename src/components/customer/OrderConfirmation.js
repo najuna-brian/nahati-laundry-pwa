@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { db } from '../../services/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -14,7 +14,7 @@ const OrderConfirmation = () => {
     const [orderSaved, setOrderSaved] = useState(false);
 
     // Function to save order to Firebase
-    const saveOrderToFirebase = async (orderId, orderData, schedulingData) => {
+    const saveOrderToFirebase = useCallback(async (orderId, orderData, schedulingData) => {
         if (!user || orderSaved) return;
 
         try {
@@ -65,7 +65,7 @@ const OrderConfirmation = () => {
         } catch (error) {
             console.error('Error saving order to Firebase: ', error);
         }
-    };
+    }, [user, orderSaved]);
 
     useEffect(() => {
         // Try to get data from location.state first (for backward compatibility)
@@ -96,7 +96,7 @@ const OrderConfirmation = () => {
         if (orderData && schedulingData && user && orderId && !orderSaved) {
             saveOrderToFirebase(orderId, orderData, schedulingData);
         }
-    }, [orderData, schedulingData, user, orderId, orderSaved]);
+    }, [orderData, schedulingData, user, orderId, orderSaved, saveOrderToFirebase]);
 
     if (!orderData) {
         return (
