@@ -4,35 +4,40 @@ import { useNavigate } from 'react-router-dom';
 const Scheduling = () => {
   const navigate = useNavigate();
   const [pickupDate, setPickupDate] = useState('');
-  const [pickupTime, setPickupTime] = useState('');
+  const [pickupTimeRange, setPickupTimeRange] = useState('');
+  const [pickupPreferredTime, setPickupPreferredTime] = useState('');
   const [deliveryDate, setDeliveryDate] = useState('');
-  const [deliveryTime, setDeliveryTime] = useState('');
+  const [deliveryTimeRange, setDeliveryTimeRange] = useState('');
+  const [deliveryPreferredTime, setDeliveryPreferredTime] = useState('');
 
-  const timeSlots = [
-    '8:00 AM - 10:00 AM',
-    '10:00 AM - 12:00 PM',
-    '12:00 PM - 2:00 PM',
-    '2:00 PM - 4:00 PM',
-    '4:00 PM - 6:00 PM'
+  const timeRanges = [
+    { value: 'morning', label: 'Morning (8:00 AM - 12:00 PM)' },
+    { value: 'afternoon', label: 'Afternoon (12:00 PM - 4:00 PM)' },
+    { value: 'evening', label: 'Evening (4:00 PM - 8:00 PM)' }
   ];
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!pickupDate || !pickupTime || !deliveryDate || !deliveryTime) {
-      alert('Please fill in all fields');
+    if (!pickupDate || !pickupTimeRange || !deliveryDate || !deliveryTimeRange) {
+      alert('Please fill in all required fields');
       return;
     }
 
     // Store scheduling data
     const schedulingData = {
       pickupDate,
-      pickupTime,
+      pickupTimeRange,
+      pickupPreferredTime,
       deliveryDate,
-      deliveryTime
+      deliveryTimeRange,
+      deliveryPreferredTime,
+      paymentOnDelivery: true
     };
 
     localStorage.setItem('schedulingData', JSON.stringify(schedulingData));
-    navigate('/payment');
+    
+    // Skip payment and go directly to confirmation
+    navigate('/order-confirmation');
   };
 
   return (
@@ -77,35 +82,54 @@ const Scheduling = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Pickup Time *
+                Pickup Time Range *
               </label>
               <div className="grid grid-cols-1 gap-2">
-                {timeSlots.map((slot) => (
+                {timeRanges.map((range) => (
                   <label
-                    key={slot}
-                    className={`flex items-center p-3 border rounded-lg cursor-pointer transition duration-200 ${pickupTime === slot
+                    key={range.value}
+                    className={`flex items-center p-3 border rounded-lg cursor-pointer transition duration-200 ${pickupTimeRange === range.value
                         ? 'border-blue-500 bg-blue-50'
                         : 'border-gray-200 hover:border-gray-300'
                       }`}
                   >
                     <input
                       type="radio"
-                      value={slot}
-                      checked={pickupTime === slot}
-                      onChange={(e) => setPickupTime(e.target.value)}
+                      value={range.value}
+                      checked={pickupTimeRange === range.value}
+                      onChange={(e) => setPickupTimeRange(e.target.value)}
                       className="sr-only"
                     />
-                    <div className={`w-4 h-4 rounded-full border-2 mr-3 ${pickupTime === slot ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
+                    <div className={`w-4 h-4 rounded-full border-2 mr-3 ${pickupTimeRange === range.value ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
                       }`}>
-                      {pickupTime === slot && (
+                      {pickupTimeRange === range.value && (
                         <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>
                       )}
                     </div>
-                    <span className="text-gray-900">{slot}</span>
+                    <span className="text-gray-900">{range.label}</span>
                   </label>
                 ))}
               </div>
             </div>
+
+            {pickupTimeRange && (
+              <div>
+                <label htmlFor="pickup-preferred-time" className="block text-sm font-medium text-gray-700 mb-2">
+                  Preferred Exact Time <span className="text-gray-400">(Optional)</span>
+                </label>
+                <input
+                  type="time"
+                  id="pickup-preferred-time"
+                  value={pickupPreferredTime}
+                  onChange={(e) => setPickupPreferredTime(e.target.value)}
+                  className="input-field"
+                  placeholder="e.g., 10:30 AM"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  We'll try our best to accommodate your preferred time within the selected range.
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -136,35 +160,54 @@ const Scheduling = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Delivery Time *
+                Delivery Time Range *
               </label>
               <div className="grid grid-cols-1 gap-2">
-                {timeSlots.map((slot) => (
+                {timeRanges.map((range) => (
                   <label
-                    key={slot}
-                    className={`flex items-center p-3 border rounded-lg cursor-pointer transition duration-200 ${deliveryTime === slot
+                    key={range.value}
+                    className={`flex items-center p-3 border rounded-lg cursor-pointer transition duration-200 ${deliveryTimeRange === range.value
                         ? 'border-green-500 bg-green-50'
                         : 'border-gray-200 hover:border-gray-300'
                       }`}
                   >
                     <input
                       type="radio"
-                      value={slot}
-                      checked={deliveryTime === slot}
-                      onChange={(e) => setDeliveryTime(e.target.value)}
+                      value={range.value}
+                      checked={deliveryTimeRange === range.value}
+                      onChange={(e) => setDeliveryTimeRange(e.target.value)}
                       className="sr-only"
                     />
-                    <div className={`w-4 h-4 rounded-full border-2 mr-3 ${deliveryTime === slot ? 'border-green-500 bg-green-500' : 'border-gray-300'
+                    <div className={`w-4 h-4 rounded-full border-2 mr-3 ${deliveryTimeRange === range.value ? 'border-green-500 bg-green-500' : 'border-gray-300'
                       }`}>
-                      {deliveryTime === slot && (
+                      {deliveryTimeRange === range.value && (
                         <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>
                       )}
                     </div>
-                    <span className="text-gray-900">{slot}</span>
+                    <span className="text-gray-900">{range.label}</span>
                   </label>
                 ))}
               </div>
             </div>
+
+            {deliveryTimeRange && (
+              <div>
+                <label htmlFor="delivery-preferred-time" className="block text-sm font-medium text-gray-700 mb-2">
+                  Preferred Exact Time <span className="text-gray-400">(Optional)</span>
+                </label>
+                <input
+                  type="time"
+                  id="delivery-preferred-time"
+                  value={deliveryPreferredTime}
+                  onChange={(e) => setDeliveryPreferredTime(e.target.value)}
+                  className="input-field"
+                  placeholder="e.g., 3:30 PM"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  We'll try our best to accommodate your preferred time within the selected range.
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -175,9 +218,9 @@ const Scheduling = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <div>
-              <h3 className="text-sm font-medium text-yellow-800">Location Setup</h3>
+              <h3 className="text-sm font-medium text-yellow-800">Enhanced Scheduling</h3>
               <p className="text-sm text-yellow-700 mt-1">
-                You'll be able to set your pickup and delivery locations in the next step using our map interface.
+                💰 Payment on delivery • ⚖️ Weight confirmed during pickup • 📍 Flexible time ranges with preferred slots
               </p>
             </div>
           </div>
@@ -188,7 +231,7 @@ const Scheduling = () => {
           type="submit"
           className="btn-primary w-full"
         >
-          Continue to Payment
+          Confirm Order Details
         </button>
       </form>
     </div>

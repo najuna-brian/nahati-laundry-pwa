@@ -44,9 +44,10 @@ const ServiceSelection = () => {
   };
 
   const calculateTotal = () => {
-    if (!selectedService || !weight) return 0;
+    if (!selectedService) return 0;
     
-    const serviceTotal = selectedService.pricePerKg * parseFloat(weight);
+    // If no weight provided, return 0 but allow order to proceed
+    const serviceTotal = weight ? selectedService.pricePerKg * parseFloat(weight) : 0;
     const addOnsTotal = selectedAddOns.reduce((total, addOn) => {
       const price = addOn.pricePerKg ? addOn.pricePerKg * addOn.quantity : addOn.basePrice * addOn.quantity;
       return total + price;
@@ -65,18 +66,19 @@ const ServiceSelection = () => {
   };
 
   const handleContinue = () => {
-    if (!selectedService || !weight) {
-      alert('Please select a service and enter weight');
+    if (!selectedService) {
+      alert('Please select a service');
       return;
     }
 
     const orderData = {
       service: selectedService,
-      weight: parseFloat(weight),
+      weight: weight ? parseFloat(weight) : null, // Allow null weight
       addOns: selectedAddOns,
       specialInstructions,
       photos,
-      total: calculateTotal()
+      total: calculateTotal(),
+      paymentOnDelivery: true // Add payment on delivery flag
     };
 
     // Store order data in localStorage for next step
@@ -152,7 +154,7 @@ const ServiceSelection = () => {
         {/* Weight Input */}
         <div>
           <label htmlFor="weight" className="block text-sm font-medium text-gray-700 mb-2">
-            Estimated Weight (kg) *
+            Estimated Weight (kg) <span className="text-gray-400">(Optional)</span>
           </label>
           <input
             type="number"
@@ -160,13 +162,15 @@ const ServiceSelection = () => {
             value={weight}
             onChange={(e) => setWeight(e.target.value)}
             className="input-field"
-            placeholder="Enter estimated weight"
+            placeholder="Enter estimated weight or leave blank"
             min="0.5"
             step="0.1"
           />
-          <p className="text-xs text-gray-500 mt-1">
-            Actual weight will be verified on pickup
-          </p>
+          <div className="flex items-center mt-2">
+            <div className="text-xs text-gray-500">
+              💡 Not sure about weight? Leave blank - we'll weigh during pickup and confirm pricing before processing.
+            </div>
+          </div>
         </div>
 
         {/* Add-ons */}
@@ -285,34 +289,45 @@ const ServiceSelection = () => {
 
       {/* Fixed Bottom Section */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 pb-24">
-        {selectedService && weight && (
+        {selectedService && (
           <div className="mb-4">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-gray-600">Service Total:</span>
-              <span className="font-medium">UGX {(selectedService.pricePerKg * parseFloat(weight || 0)).toLocaleString()}</span>
-            </div>
-            {selectedAddOns.length > 0 && (
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-gray-600">Add-ons Total:</span>
-                <span className="font-medium">
-                  UGX {selectedAddOns.reduce((total, addOn) => {
-                    const price = addOn.pricePerKg ? addOn.pricePerKg * addOn.quantity : addOn.basePrice * addOn.quantity;
-                    return total + price;
-                  }, 0).toLocaleString()}
-                </span>
+            {weight ? (
+              <>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-gray-600">Service Total:</span>
+                  <span className="font-medium">UGX {(selectedService.pricePerKg * parseFloat(weight)).toLocaleString()}</span>
+                </div>
+                {selectedAddOns.length > 0 && (
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-gray-600">Add-ons Total:</span>
+                    <span className="font-medium">
+                      UGX {selectedAddOns.reduce((total, addOn) => {
+                        const price = addOn.pricePerKg ? addOn.pricePerKg * addOn.quantity : addOn.basePrice * addOn.quantity;
+                        return total + price;
+                      }, 0).toLocaleString()}
+                    </span>
+                  </div>
+                )}
+                <div className="flex justify-between items-center text-lg font-semibold border-t pt-2">
+                  <span>Total:</span>
+                  <span className="text-blue-600">UGX {calculateTotal().toLocaleString()}</span>
+                </div>
+              </>
+            ) : (
+              <div className="text-center p-4 bg-blue-50 rounded-lg">
+                <p className="text-sm text-blue-700">
+                  💡 <strong>Pricing will be confirmed after pickup</strong><br/>
+                  Final cost will be calculated based on actual weight measured by our staff.
+                </p>
               </div>
             )}
-            <div className="flex justify-between items-center text-lg font-semibold border-t pt-2">
-              <span>Total:</span>
-              <span className="text-blue-600">UGX {calculateTotal().toLocaleString()}</span>
-            </div>
           </div>
         )}
         <button
           onClick={handleContinue}
-          disabled={!selectedService || !weight}
+          disabled={!selectedService}
           className={`w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-300 transform ${
-            !selectedService || !weight
+            !selectedService
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
               : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:scale-105 active:scale-95 hover:shadow-xl'
           }`}

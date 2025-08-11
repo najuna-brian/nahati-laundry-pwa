@@ -21,6 +21,9 @@ import CustomerManagement from './components/admin/CustomerManagement';
 import Inventory from './components/admin/Inventory';
 import DeliveryManagement from './components/admin/DeliveryManagement';
 import Reports from './components/admin/Reports';
+import NotificationCenter from './components/admin/NotificationCenter';
+import StaffCustomerRegistration from './components/admin/StaffCustomerRegistration';
+import CustomerInvitation from './components/customer/CustomerInvitation';
 import FirebaseDataDemo from './components/FirebaseDataDemo';
 import FirebaseSetup from './components/FirebaseSetup';
 import InstallPrompt from './components/shared/InstallPrompt';
@@ -88,7 +91,6 @@ function App() {
             <Route path="/services" element={<ServiceSelection />} />
             <Route path="/order-details" element={<OrderDetails />} />
             <Route path="/scheduling" element={<Scheduling />} />
-            <Route path="/payment" element={<Payment />} />
             <Route path="/order-confirmation" element={<OrderConfirmation />} />
             <Route path="/order-tracking" element={<OrderTracking />} />
             <Route path="/my-orders" element={<MyOrders />} />
@@ -103,6 +105,9 @@ function App() {
             <Route path="/admin/inventory" element={<Inventory />} />
             <Route path="/admin/delivery" element={<DeliveryManagement />} />
             <Route path="/admin/reports" element={<Reports />} />
+            <Route path="/admin/notifications" element={<NotificationCenter />} />
+            <Route path="/admin/register-customer" element={<StaffCustomerRegistration />} />
+            <Route path="/customer-invitation/:invitationCode" element={<CustomerInvitation />} />
           </Routes>
         </Layout>
       </Router>

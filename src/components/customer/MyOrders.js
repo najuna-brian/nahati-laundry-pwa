@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { getUserOrders } from '../../services/firestore';
 import { useAuth } from '../../services/auth';
 import { ORDER_STATUS_LABELS } from '../../utils/constants';
+import InvoiceGenerator from '../shared/InvoiceGenerator';
 
 const MyOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -58,10 +59,9 @@ const MyOrders = () => {
         ) : (
           <div className="space-y-4">
             {orders.map(order => (
-              <Link
+              <div
                 key={order.id}
-                to={`/order-tracking?id=${order.id}`}
-                className="block bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition duration-200"
+                className="block bg-white rounded-xl p-4 shadow-sm border border-gray-100"
               >
                 <div className="flex items-center justify-between mb-3">
                   <div>
@@ -91,7 +91,42 @@ const MyOrders = () => {
                     </p>
                   </div>
                 )}
-              </Link>
+
+                {/* Action Buttons */}
+                <div className="mt-4 flex space-x-3">
+                  <Link
+                    to={`/order-tracking?id=${order.id}`}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg text-center text-sm font-semibold"
+                  >
+                    📱 Track Order
+                  </Link>
+                  
+                  {/* Show invoice button if order has been picked up and weighed */}
+                  {order.status !== 'pending' && order.weight && (
+                    <InvoiceGenerator 
+                      order={{
+                        ...order,
+                        orderNumber: order.id,
+                        customerName: currentUser?.displayName || currentUser?.email || 'Customer',
+                        customerPhone: order.phone || '',
+                        customerEmail: currentUser?.email || '',
+                        totalAmount: order.total_price_ugx || 0,
+                        services: [
+                          {
+                            name: `${order.service_type} Service`,
+                            quantity: 1,
+                            weight: order.weight,
+                            price: order.total_price_ugx || 0
+                          }
+                        ]
+                      }}
+                      onDownload={(fileName) => {
+                        console.log(`Invoice downloaded: ${fileName}`);
+                      }}
+                    />
+                  )}
+                </div>
+              </div>
             ))}
           </div>
         )}

@@ -47,14 +47,25 @@ const OrderDetails = () => {
               <span className="text-gray-600">Service:</span>
               <span className="font-medium">{orderData.service.name}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Weight:</span>
-              <span className="font-medium">{orderData.weight} kg</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Service Cost:</span>
-              <span className="font-medium">UGX {(orderData.service.pricePerKg * orderData.weight).toLocaleString()}</span>
-            </div>
+            {orderData.weight ? (
+              <>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Estimated Weight:</span>
+                  <span className="font-medium">{orderData.weight} kg</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Service Cost:</span>
+                  <span className="font-medium">UGX {(orderData.service.pricePerKg * orderData.weight).toLocaleString()}</span>
+                </div>
+              </>
+            ) : (
+              <div className="p-3 bg-blue-50 rounded-lg">
+                <p className="text-sm text-blue-700">
+                  ⚖️ <strong>Weight to be confirmed during pickup</strong><br/>
+                  Our staff will weigh your clothes and confirm the final price before processing.
+                </p>
+              </div>
+            )}
             
             {orderData.addOns.length > 0 && (
               <>
@@ -70,9 +81,18 @@ const OrderDetails = () => {
               </>
             )}
             
-            <div className="border-t pt-3 mt-3 flex justify-between text-lg font-semibold">
-              <span>Subtotal:</span>
-              <span className="text-blue-600">UGX {orderData.total.toLocaleString()}</span>
+            <div className="border-t pt-3 mt-3">
+              {orderData.weight ? (
+                <div className="flex justify-between text-lg font-semibold">
+                  <span>Estimated Total:</span>
+                  <span className="text-blue-600">UGX {orderData.total.toLocaleString()}</span>
+                </div>
+              ) : (
+                <div className="text-center">
+                  <p className="text-sm text-gray-600 mb-2">💰 <strong>Payment on Delivery</strong></p>
+                  <p className="text-xs text-gray-500">Final amount will be calculated after pickup and confirmed before processing</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -84,8 +104,8 @@ const OrderDetails = () => {
           <ul className="list-disc list-inside space-y-2 text-gray-600 mb-6">
             <li>Select pickup and delivery locations</li>
             <li>Schedule pickup and delivery times</li>
-            <li>Review delivery fees</li>
-            <li>Choose payment method</li>
+            <li>Confirm your order details</li>
+            <li>Payment will be collected on delivery</li>
           </ul>
           
           <button 

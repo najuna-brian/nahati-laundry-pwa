@@ -48,6 +48,81 @@ const AdminDashboard = () => {
             </div>
             <div className="metrics">
                 <h2>Key Metrics</h2>
+                
+                {/* Admin Navigation Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h3 className="text-lg font-semibold">📋 Order Management</h3>
+                                <p className="text-blue-100 text-sm">View and manage all orders</p>
+                            </div>
+                            <a href="/admin/orders" className="bg-white text-blue-600 px-4 py-2 rounded-lg font-semibold hover:bg-blue-50">
+                                View
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h3 className="text-lg font-semibold">👥 Customer Management</h3>
+                                <p className="text-green-100 text-sm">Manage customer accounts</p>
+                            </div>
+                            <a href="/admin/customers" className="bg-white text-green-600 px-4 py-2 rounded-lg font-semibold hover:bg-green-50">
+                                View
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h3 className="text-lg font-semibold">📱 Notifications</h3>
+                                <p className="text-purple-100 text-sm">Send customer notifications</p>
+                            </div>
+                            <a href="/admin/notifications" className="bg-white text-purple-600 px-4 py-2 rounded-lg font-semibold hover:bg-purple-50">
+                                Send
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h3 className="text-lg font-semibold">➕ Register Customer</h3>
+                                <p className="text-orange-100 text-sm">Add walk-in customers</p>
+                            </div>
+                            <a href="/admin/register-customer" className="bg-white text-orange-600 px-4 py-2 rounded-lg font-semibold hover:bg-orange-50">
+                                Register
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div className="bg-gradient-to-r from-red-500 to-red-600 text-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h3 className="text-lg font-semibold">📊 Reports</h3>
+                                <p className="text-red-100 text-sm">View business analytics</p>
+                            </div>
+                            <a href="/admin/reports" className="bg-white text-red-600 px-4 py-2 rounded-lg font-semibold hover:bg-red-50">
+                                View
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div className="bg-gradient-to-r from-teal-500 to-teal-600 text-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h3 className="text-lg font-semibold">🚚 Delivery</h3>
+                                <p className="text-teal-100 text-sm">Manage deliveries</p>
+                            </div>
+                            <a href="/admin/delivery" className="bg-white text-teal-600 px-4 py-2 rounded-lg font-semibold hover:bg-teal-50">
+                                Manage
+                            </a>
+                        </div>
+                    </div>
+                </div>
                 {metrics && (
                     <ul>
                         <li>Total Orders: {metrics.totalOrders}</li>
