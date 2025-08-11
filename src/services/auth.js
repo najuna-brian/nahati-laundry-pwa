@@ -39,7 +39,7 @@ export const AuthProvider = ({ children }) => {
         phone: '',
         addresses: [],
         role: 'customer',
-        created_at: new Date(),
+        createdAt: new Date(),
         fcm_token: ''
       }, { merge: true });
       
@@ -65,7 +65,7 @@ export const AuthProvider = ({ children }) => {
         phone,
         addresses: [],
         role: 'customer',
-        created_at: new Date(),
+        createdAt: new Date(),
         fcm_token: ''
       });
       

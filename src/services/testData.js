@@ -214,7 +214,7 @@ export const generateRandomOrder = (userId = 'user1', customerName = 'Test User'
   const randomPayment = paymentMethods[Math.floor(Math.random() * paymentMethods.length)];
   
   return {
-    user_id: userId,
+    userId: userId,
     customer_name: customerName,
     customer_phone: '+256700' + Math.floor(Math.random() * 999999),
     customer_email: customerName.toLowerCase().replace(' ', '') + '@example.com',

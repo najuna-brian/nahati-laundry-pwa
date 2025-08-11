@@ -18,7 +18,7 @@ const FirebaseDataDemo = () => {
 
   // Real-time data using hooks
   const { data: allOrders, loading: ordersLoading, error: ordersError } = useFirestoreCollection('orders', {
-    orderBy: ['created_at', 'desc'],
+    orderBy: ['createdAt', 'desc'],
     limit: 10
   });
 
@@ -173,7 +173,7 @@ const FirebaseDataDemo = () => {
                     <div className="text-right">
                       <p className="font-medium">UGX {(order.total_price || 0).toLocaleString()}</p>
                       <p className="text-xs text-gray-500">
-                        {order.created_at ? new Date(order.created_at.seconds * 1000).toLocaleDateString() : 'N/A'}
+                        {order.createdAt ? new Date(order.createdAt.seconds * 1000).toLocaleDateString() : 'N/A'}
                       </p>
                     </div>
                   </div>
@@ -208,7 +208,7 @@ const FirebaseDataDemo = () => {
                       <div className="text-right">
                         <p className="font-medium">UGX {(order.total_price || 0).toLocaleString()}</p>
                         <p className="text-xs text-gray-500">
-                          {order.created_at ? new Date(order.created_at.seconds * 1000).toLocaleDateString() : 'N/A'}
+                          {order.createdAt ? new Date(order.createdAt.seconds * 1000).toLocaleDateString() : 'N/A'}
                         </p>
                       </div>
                     </div>
@@ -240,7 +240,7 @@ const FirebaseDataDemo = () => {
                       </div>
                       <div className="text-right">
                         <p className="text-xs text-gray-500">
-                          {user.created_at ? new Date(user.created_at.seconds * 1000).toLocaleDateString() : 'N/A'}
+                          {user.createdAt ? new Date(user.createdAt.seconds * 1000).toLocaleDateString() : 'N/A'}
                         </p>
                       </div>
                     </div>
@@ -272,7 +272,7 @@ const FirebaseDataDemo = () => {
 
 const { data, loading, error } = useFirestoreCollection('orders', {
   where: [['status', '==', 'pending']],
-  orderBy: ['created_at', 'desc'],
+  orderBy: ['createdAt', 'desc'],
   limit: 10
 });`}
               </pre>
@@ -294,8 +294,8 @@ const { data, loading, error } = useFirestoreDocument('users', userId);`}
 
 const fetchOrders = async () => {
   const result = await getCollectionData('orders', {
-    where: [['user_id', '==', currentUser.uid]],
-    orderBy: ['created_at', 'desc']
+    where: [['userId', '==', currentUser.uid]],
+    orderBy: ['createdAt', 'desc']
   });
   
   if (result.success) {

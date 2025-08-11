@@ -122,9 +122,9 @@ const NotificationBell = ({ notifications = [], onNotificationClick }) => {
                                                 <p className="text-sm text-gray-600 mt-1">
                                                     {notification.message}
                                                 </p>
-                                                <p className="text-xs text-gray-400 mt-1">
-                                                    {formatTime(notification.createdAt)}
-                                                </p>
+                                                                      <div className="text-xs text-gray-400">
+                        {notification.createdAt?.toDate?.()?.toLocaleDateString() || 'Recently'}
+                      </div>
                                             </div>
                                         </div>
                                     </div>

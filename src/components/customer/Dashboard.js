@@ -227,7 +227,7 @@ const Dashboard = () => {
                       {(order.status || 'pending').replace('_', ' ').toUpperCase()}
                     </span>
                     <p className="text-xs text-gray-500 mt-1">
-                      {order.created_at ? new Date(order.created_at.seconds * 1000).toLocaleDateString() : 'N/A'}
+                      {order.createdAt ? new Date(order.createdAt.seconds * 1000).toLocaleDateString() : 'N/A'}
                     </p>
                   </div>
                 </div>

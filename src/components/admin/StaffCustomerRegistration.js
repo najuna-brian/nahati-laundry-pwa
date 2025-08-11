@@ -98,7 +98,7 @@ const StaffCustomerRegistration = () => {
         invitationCode: invitationCode,
         invitationSent: false,
         accountActivated: false,
-        createdAt: new Date(),
+        created_at: new Date(),  // Changed from createdAt to created_at
         createdBy: 'staff' // In real app, this would be the staff member's ID
       });
 
@@ -121,7 +121,7 @@ const StaffCustomerRegistration = () => {
         finalAmount: null,
         paymentStatus: 'pending',
         paymentMethod: 'cash_on_delivery',
-        createdAt: new Date(),
+        created_at: new Date(),  // Changed from createdAt to created_at
         createdBy: 'staff',
         invitationCode: invitationCode
       };

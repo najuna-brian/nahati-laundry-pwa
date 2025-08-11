@@ -20,14 +20,12 @@ const StaffDashboard = () => {
   useEffect(() => {
     if (!user) return;
 
-    const ordersQuery = query(
-      collection(db, 'orders'),
-      where('status', 'in', ['pending', 'picked_up', 'processing', 'ready_for_delivery']),
+    const ordersRef = collection(db, 'orders');
+    const q = query(
+      ordersRef,
       orderBy('createdAt', 'desc')
-    );
-
-    const unsubscribeOrders = onSnapshot(
-      ordersQuery,
+    );    const unsubscribeOrders = onSnapshot(
+      q,
       (snapshot) => {
         const ordersData = snapshot.docs.map(doc => ({
           id: doc.id,
@@ -61,9 +59,10 @@ const StaffDashboard = () => {
 
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
-      await updateDoc(doc(db, 'orders', orderId), {
+      const orderRef = doc(db, 'orders', orderId);
+      await updateDoc(orderRef, {
         status: newStatus,
-        updatedAt: new Date()
+        updated_at: new Date()
       });
     } catch (error) {
       console.error('Error updating order status:', error);

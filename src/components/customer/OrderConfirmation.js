@@ -21,7 +21,7 @@ const OrderConfirmation = () => {
         try {
             const orderRecord = {
                 orderId: orderId,
-                user_id: user.uid,  // Changed from userId to user_id
+                userId: user.uid,
                 userEmail: user.email || 'guest@nahati.com',
                 userName: user.displayName || 'Guest User',
                 
@@ -44,8 +44,8 @@ const OrderConfirmation = () => {
                 // Order status
                 status: 'pending',
                 paymentOnDelivery: true,
-                created_at: serverTimestamp(),  // Changed from createdAt to created_at
-                updated_at: serverTimestamp(),  // Changed from updatedAt to updated_at
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp(),
                 
                 // Additional fields
                 actualWeight: null,

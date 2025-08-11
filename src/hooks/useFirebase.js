@@ -155,8 +155,8 @@ export const useUserOrders = (userId) => {
 
     // Set up real-time listener for user orders
     unsubscribeRef.current = listenToCollection('orders', handleData, {
-      where: [['user_id', '==', userId]],
-      orderBy: ['created_at', 'desc']
+      where: [['userId', '==', userId]],
+      orderBy: ['createdAt', 'desc']
     });
 
     // Cleanup function

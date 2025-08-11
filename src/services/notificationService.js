@@ -81,18 +81,14 @@ class NotificationService {
   async sendNewOrderNotification(orderData) {
     const notification = {
       type: 'new_order',
-      title: 'New Order Received',
-      message: `Order #${orderData.orderId} from ${orderData.userName}`,
-      orderId: orderData.orderId,
-      customerName: orderData.userName,
+      title: '🆕 New Order Received',
+      message: `New order from ${orderData.customerName} - Total: $${orderData.totalAmount}`,
       priority: 'high',
-      actionRequired: true,
+      isRead: false,
       data: {
-        orderId: orderData.orderId,
-        customerName: orderData.userName,
-        service: orderData.service?.name,
-        pickupDate: orderData.pickupDate,
-        pickupTime: orderData.pickupTimeRange
+        orderId: orderData.orderId || orderData.id,
+        customerName: orderData.customerName,
+        totalAmount: orderData.totalAmount
       }
     };
 

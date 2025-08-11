@@ -175,7 +175,7 @@ const OrderDetails = ({ orderId, onClose, onStatusUpdate }) => {
                         </button>
                     </div>
                     <p className="text-blue-100 mt-2">
-                        Created: {order.createdAt?.toDate?.()?.toLocaleDateString() || 'Just now'}
+                        Created: {order.created_at?.toDate?.()?.toLocaleDateString() || 'Just now'}
                     </p>
                 </div>
 

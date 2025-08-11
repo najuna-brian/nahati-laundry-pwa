@@ -16,7 +16,7 @@ import { db } from './firebase';
 // Function to add a new user to Firestore
 export const addUser = async (userData) => {
   try {
-    const userRef = doc(db, 'users', userData.user_id);
+    const userRef = doc(db, 'users', userData.userId);
     await setDoc(userRef, userData);
     return { success: true };
   } catch (error) {
@@ -47,7 +47,7 @@ export const addOrder = async (orderData) => {
     const ordersRef = collection(db, 'orders');
     const docRef = await addDoc(ordersRef, {
       ...orderData,
-      created_at: serverTimestamp(),
+      createdAt: serverTimestamp(),
       status: 'placed'
     });
     return { success: true, orderId: docRef.id };
@@ -63,8 +63,8 @@ export const getUserOrders = async (userId) => {
     const ordersRef = collection(db, 'orders');
     const q = query(
       ordersRef,
-      where('user_id', '==', userId),
-      orderBy('created_at', 'desc')
+      where('userId', '==', userId),
+      orderBy('createdAt', 'desc')
     );
     const querySnapshot = await getDocs(q);
     const orders = [];
@@ -94,7 +94,7 @@ export const updateOrderStatus = async (orderId, status) => {
 export const getAllOrders = async () => {
   try {
     const ordersRef = collection(db, 'orders');
-    const q = query(ordersRef, orderBy('created_at', 'desc'));
+    const q = query(ordersRef, orderBy('createdAt', 'desc'));
     const querySnapshot = await getDocs(q);
     const orders = [];
     querySnapshot.forEach((doc) => {

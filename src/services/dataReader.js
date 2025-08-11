@@ -11,7 +11,7 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 
-// ==================== REAL-TIME DATA READING ====================
+// ==================== BASIC DATA READING FUNCTIONS ====================
 
 /**
  * Listen to real-time changes in a collection
@@ -194,8 +194,8 @@ export const getDocumentById = async (collectionName, documentId) => {
  */
 export const getUserOrders = async (userId) => {
   return await getCollectionData('orders', {
-    where: [['user_id', '==', userId]],
-    orderBy: ['created_at', 'desc']
+    where: [['userId', '==', userId]],
+    orderBy: ['createdAt', 'desc']
   });
 };
 
@@ -207,7 +207,7 @@ export const getUserOrders = async (userId) => {
 export const getOrdersByStatus = async (status) => {
   return await getCollectionData('orders', {
     where: [['status', '==', status]],
-    orderBy: ['created_at', 'desc']
+    orderBy: ['createdAt', 'desc']
   });
 };
 
@@ -217,7 +217,7 @@ export const getOrdersByStatus = async (status) => {
  */
 export const getRecentOrders = async () => {
   return await getCollectionData('orders', {
-    orderBy: ['created_at', 'desc'],
+    orderBy: ['createdAt', 'desc'],
     limit: 50
   });
 };
@@ -229,7 +229,7 @@ export const getRecentOrders = async () => {
 export const getActiveOrders = async () => {
   return await getCollectionData('orders', {
     where: [['status', 'in', ['pending', 'confirmed', 'picked-up', 'in-progress', 'ready']]],
-    orderBy: ['created_at', 'desc']
+    orderBy: ['createdAt', 'desc']
   });
 };
 
@@ -241,8 +241,8 @@ export const getActiveOrders = async () => {
  */
 export const listenToUserOrders = (userId, callback) => {
   return listenToCollection('orders', callback, {
-    where: [['user_id', '==', userId]],
-    orderBy: ['created_at', 'desc']
+    where: [['userId', '==', userId]],
+    orderBy: ['createdAt', 'desc']
   });
 };
 
@@ -255,7 +255,7 @@ export const listenToUserOrders = (userId, callback) => {
 export const listenToOrdersByStatus = (status, callback) => {
   return listenToCollection('orders', callback, {
     where: [['status', '==', status]],
-    orderBy: ['created_at', 'desc']
+    orderBy: ['createdAt', 'desc']
   });
 };
 

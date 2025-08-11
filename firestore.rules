@@ -18,12 +18,12 @@ service cloud.firestore {
     match /orders/{orderId} {
       // Users can read their own orders
       allow read: if request.auth != null && 
-        (resource.data.user_id == request.auth.uid || 
+        (resource.data.userId == request.auth.uid || 
          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
       
       // Users can create orders (must be authenticated)
       allow create: if request.auth != null && 
-        request.resource.data.user_id == request.auth.uid;
+        request.resource.data.userId == request.auth.uid;
       
       // Only admins can update orders
       allow update: if request.auth != null && 
@@ -32,6 +32,22 @@ service cloud.firestore {
       // Only admins can delete orders
       allow delete: if request.auth != null && 
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Notifications collection
+    match /notifications/{notificationId} {
+      // Users can read their own notifications
+      allow read: if request.auth != null && 
+        (resource.data.userId == request.auth.uid || 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+      
+      // Only admins can create and update notifications
+      allow create, update: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      
+      // Users can update their own notifications (mark as read)
+      allow update: if request.auth != null && 
+        resource.data.userId == request.auth.uid;
     }
     
     // Admin-only collections
