@@ -38,19 +38,6 @@ const NotificationBell = ({ notifications = [], onNotificationClick }) => {
         }
     };
 
-    const formatTime = (timestamp) => {
-        if (!timestamp) return 'Just now';
-        
-        const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-        const now = new Date();
-        const diffInMinutes = Math.floor((now - date) / 60000);
-        
-        if (diffInMinutes < 1) return 'Just now';
-        if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
-        if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
-        return date.toLocaleDateString();
-    };
-
     return (
         <div className="relative">
             {/* Notification Bell Button */}

@@ -8,7 +8,7 @@ import { notificationService } from '../../services/notificationService';
 const OrderConfirmation = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { currentUser } = useAuth();
     const [orderData, setOrderData] = useState(null);
     const [schedulingData, setSchedulingData] = useState(null);
     const [orderId, setOrderId] = useState('');
@@ -16,14 +16,14 @@ const OrderConfirmation = () => {
 
     // Function to save order to Firebase
     const saveOrderToFirebase = useCallback(async (orderId, orderData, schedulingData) => {
-        if (!user || orderSaved) return;
+        if (!currentUser || orderSaved) return;
 
         try {
             const orderRecord = {
                 orderId: orderId,
-                userId: user.uid,
-                userEmail: user.email || 'guest@nahati.com',
-                userName: user.displayName || 'Guest User',
+                userId: currentUser.uid,
+                userEmail: currentUser.email || 'guest@nahati.com',
+                userName: currentUser.displayName || 'Guest User',
                 
                 // Service details
                 service: orderData.service,
@@ -62,12 +62,12 @@ const OrderConfirmation = () => {
             await notificationService.sendToAllStaffAndAdmins({
                 type: 'new_order',
                 title: 'New Order Received',
-                message: `Order #${orderId} from ${user.displayName || user.email}`,
+                message: `Order #${orderId} from ${currentUser.displayName || currentUser.email}`,
                 orderId: orderId,
                 priority: 'high',
                 data: {
                     orderId: orderId,
-                    customerName: user.displayName || user.email,
+                    customerName: currentUser.displayName || currentUser.email,
                     service: orderData.service?.name,
                     pickupDate: schedulingData.pickupDate
                 }
@@ -84,7 +84,7 @@ const OrderConfirmation = () => {
         } catch (error) {
             console.error('Error saving order to Firebase: ', error);
         }
-    }, [user, orderSaved]);
+    }, [currentUser, orderSaved]);
 
     useEffect(() => {
         // Try to get data from location.state first (for backward compatibility)
@@ -112,10 +112,10 @@ const OrderConfirmation = () => {
 
     // Separate useEffect for saving order to prevent loops
     useEffect(() => {
-        if (orderData && schedulingData && user && orderId && !orderSaved) {
+        if (orderData && schedulingData && currentUser && orderId && !orderSaved) {
             saveOrderToFirebase(orderId, orderData, schedulingData);
         }
-    }, [orderData, schedulingData, user, orderId, orderSaved, saveOrderToFirebase]);
+    }, [orderData, schedulingData, currentUser, orderId, orderSaved, saveOrderToFirebase]);
 
     if (!orderData) {
         return (

@@ -94,7 +94,7 @@ const Dashboard = () => {
           {/* Logo Section */}
           <div className="flex justify-center mb-6">
             <img 
-              src="/icons/default.svg" 
+              src="/icons/default-monochrome.svg" 
               alt="Nahati Anytime Laundry" 
               className="h-20 w-auto"
             />

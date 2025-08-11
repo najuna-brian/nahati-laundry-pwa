@@ -7,7 +7,7 @@ import LoadingSpinner from '../shared/LoadingSpinner';
 import NotificationBell from '../shared/NotificationBell';
 
 const AdminDashboard = () => {
-    const { user } = useAuth();
+    const { currentUser } = useAuth();
     const [orders, setOrders] = useState([]);
     const [metrics, setMetrics] = useState(null);
     const [notifications, setNotifications] = useState([]);
@@ -30,9 +30,9 @@ const AdminDashboard = () => {
         fetchData();
         
         // Listen to admin notifications
-        if (user) {
+        if (currentUser) {
             const unsubscribeNotifications = notificationService.listenToNotifications(
-                user.uid,
+                currentUser.uid,
                 (notifications) => {
                     setNotifications(notifications);
                 }
@@ -44,7 +44,7 @@ const AdminDashboard = () => {
                 }
             };
         }
-    }, [user]);
+    }, [currentUser]);
 
     if (loading) {
         return <LoadingSpinner />;
@@ -59,7 +59,7 @@ const AdminDashboard = () => {
                         <img 
                             src="/icons/default.svg" 
                             alt="Nahati Anytime Laundry" 
-                            className="h-16 w-auto"
+                            className="h-20 w-auto"
                         />
                         <NotificationBell 
                             notifications={notifications}

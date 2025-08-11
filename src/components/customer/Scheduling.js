@@ -64,9 +64,9 @@ const Scheduling = () => {
   };
 
   const handleManualAddress = (address) => {
+    setPickupAddress(address);
     if (address.trim()) {
       setPickupLocationMethod('manual');
-      setPickupAddress(address.trim());
     }
   };
 
@@ -184,6 +184,7 @@ const Scheduling = () => {
                   placeholder="Enter your pickup address (e.g., Plot 123, Kampala Road, Central Division, Kampala)"
                   className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   rows="3"
+                  value={pickupLocationMethod === 'manual' ? pickupAddress : ''}
                   onChange={(e) => handleManualAddress(e.target.value)}
                 />
               </div>

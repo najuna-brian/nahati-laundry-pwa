@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, where, orderBy, onSnapshot, updateDoc, doc } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useAuth } from '../../services/auth';
 import { notificationService } from '../../services/notificationService';
@@ -9,7 +9,7 @@ import NotificationBell from '../shared/NotificationBell';
 import OrderDetails from './OrderDetails';
 
 const StaffDashboard = () => {
-  const { user } = useAuth();
+  const { currentUser } = useAuth();
   const [orders, setOrders] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,7 +18,7 @@ const StaffDashboard = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!user) return;
+    if (!currentUser) return;
 
     const ordersRef = collection(db, 'orders');
     const q = query(
@@ -43,7 +43,7 @@ const StaffDashboard = () => {
 
     // Listen to notifications for staff
     const unsubscribeNotifications = notificationService.listenToNotifications(
-      user.uid,
+      currentUser.uid,
       (notifications) => {
         setNotifications(notifications);
       }
@@ -55,7 +55,7 @@ const StaffDashboard = () => {
         unsubscribeNotifications();
       }
     };
-  }, [user]);
+  }, [currentUser]);
 
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
