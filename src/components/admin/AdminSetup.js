@@ -1,9 +1,77 @@
 import React, { useState } from 'react';
-import { createDefaultAdminAccount } from '../utils/createAdminAccount';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+import { auth, db } from '../../services/firebase';
 
 const AdminSetup = () => {
   const [setupStatus, setSetupStatus] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  const defaultAdminCredentials = {
+    email: 'nahatico.ltd@gmail.com',
+    password: 'Nahati2025!',
+    name: 'System Administrator',
+    phone: '+256200981445'
+  };
+
+  const createDefaultAdminAccount = async () => {
+    try {
+      console.log('Creating default admin account...');
+      
+      // Create authentication account
+      const userCredential = await createUserWithEmailAndPassword(
+        auth, 
+        defaultAdminCredentials.email, 
+        defaultAdminCredentials.password
+      );
+      
+      const user = userCredential.user;
+      console.log('Admin auth account created:', user.uid);
+      
+      // Create user document in Firestore
+      await setDoc(doc(db, 'users', user.uid), {
+        email: defaultAdminCredentials.email,
+        name: defaultAdminCredentials.name,
+        phone: defaultAdminCredentials.phone,
+        role: 'admin',
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        permissions: {
+          manageUsers: true,
+          manageOrders: true,
+          manageInventory: true,
+          viewReports: true,
+          manageDeliveries: true,
+          sendNotifications: true,
+          manageStaff: true
+        }
+      });
+      
+      console.log('✅ Default admin account created successfully!');
+      
+      return {
+        success: true,
+        uid: user.uid,
+        email: defaultAdminCredentials.email
+      };
+      
+    } catch (error) {
+      console.error('❌ Error creating admin account:', error);
+      
+      if (error.code === 'auth/email-already-in-use') {
+        return {
+          success: true,
+          message: 'Admin account already exists'
+        };
+      }
+      
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  };
 
   const handleCreateAdmin = async () => {
     setLoading(true);
@@ -41,10 +109,10 @@ const AdminSetup = () => {
           <h3 className="text-lg font-medium text-gray-900 mb-4">Default Admin Credentials</h3>
           <div className="bg-gray-50 p-4 rounded-md mb-4">
             <p className="text-sm text-gray-700">
-              <strong>Email:</strong> nahatico.ltd@gmail.com<br/>
-              <strong>Password:</strong> Nahati2025!<br/>
-              <strong>Name:</strong> System Administrator<br/>
-              <strong>Phone:</strong> +256200981445
+              <strong>Email:</strong> {defaultAdminCredentials.email}<br/>
+              <strong>Password:</strong> {defaultAdminCredentials.password}<br/>
+              <strong>Name:</strong> {defaultAdminCredentials.name}<br/>
+              <strong>Phone:</strong> {defaultAdminCredentials.phone}
             </p>
           </div>
 
