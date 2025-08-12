@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import AdminDashboard from '../admin/AdminDashboard';
 import OrderManagement from '../admin/OrderManagement';
 import CustomerManagement from '../admin/CustomerManagement';
@@ -13,6 +13,7 @@ import StaffManagement from '../admin/StaffManagement';
 const AdminRoutes = () => {
   return (
     <Routes>
+      <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
       <Route path="/dashboard" element={<AdminDashboard />} />
       <Route path="/orders" element={<OrderManagement />} />
       <Route path="/customers" element={<CustomerManagement />} />

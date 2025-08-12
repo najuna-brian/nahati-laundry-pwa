@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { CURRENCIES } from '../../utils/constants';
 
 const OrderDetails = () => {
   const navigate = useNavigate();
@@ -47,6 +48,10 @@ const OrderDetails = () => {
               <span className="text-gray-600">Service:</span>
               <span className="font-medium">{orderData.service.name}</span>
             </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Currency:</span>
+              <span className="font-medium">{orderData.currency} ({CURRENCIES[orderData.currency]?.symbol || '$'})</span>
+            </div>
             {orderData.weight ? (
               <>
                 <div className="flex justify-between">
@@ -55,7 +60,7 @@ const OrderDetails = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Service Cost:</span>
-                  <span className="font-medium">UGX {(orderData.service.pricePerKg * orderData.weight).toLocaleString()}</span>
+                  <span className="font-medium">{CURRENCIES[orderData.currency]?.formatPrice(CURRENCIES[orderData.currency]?.services[orderData.service.id]?.pricePerKg * orderData.weight) || `${orderData.currency} ${(orderData.service.pricePerKg * orderData.weight).toLocaleString()}`}</span>
                 </div>
               </>
             ) : (
@@ -74,7 +79,7 @@ const OrderDetails = () => {
                   {orderData.addOns.map((addOn, index) => (
                     <div key={index} className="flex justify-between text-sm mb-1">
                       <span className="text-gray-600">{addOn.name} x{addOn.quantity}</span>
-                      <span>UGX {((addOn.pricePerKg || addOn.basePrice) * addOn.quantity).toLocaleString()}</span>
+                      <span>{CURRENCIES[orderData.currency]?.formatPrice(((CURRENCIES[orderData.currency]?.addOns[addOn.id]?.pricePerKg || CURRENCIES[orderData.currency]?.addOns[addOn.id]?.basePrice) * addOn.quantity)) || `${orderData.currency} ${((addOn.pricePerKg || addOn.basePrice) * addOn.quantity).toLocaleString()}`}</span>
                     </div>
                   ))}
                 </div>
@@ -85,7 +90,7 @@ const OrderDetails = () => {
               {orderData.weight ? (
                 <div className="flex justify-between text-lg font-semibold">
                   <span>Estimated Total:</span>
-                  <span className="text-blue-600">UGX {orderData.total.toLocaleString()}</span>
+                  <span className="text-blue-600">{CURRENCIES[orderData.currency]?.formatPrice(orderData.total) || `${orderData.currency} ${orderData.total.toLocaleString()}`}</span>
                 </div>
               ) : (
                 <div className="text-center">

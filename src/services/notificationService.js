@@ -7,6 +7,7 @@ import {
   onSnapshot, 
   updateDoc, 
   doc, 
+  getDoc,
   serverTimestamp,
   getDocs 
 } from 'firebase/firestore';
@@ -278,6 +279,40 @@ class NotificationService {
   }
 
   /**
+   * Listen to real-time notifications for a user
+   */
+  listenToNotifications(userId, callback) {
+    try {
+      const notificationsQuery = query(
+        collection(db, 'notifications'),
+        where('userId', '==', userId),
+        orderBy('createdAt', 'desc')
+      );
+
+      const unsubscribe = onSnapshot(notificationsQuery, (snapshot) => {
+        const notifications = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        
+        callback(notifications);
+      }, (error) => {
+        console.error('Error listening to notifications:', error);
+        callback([]);
+      });
+
+      // Store the unsubscribe function
+      this.listeners.set(userId, unsubscribe);
+      
+      return unsubscribe;
+    } catch (error) {
+      console.error('Error setting up notification listener:', error);
+      callback([]);
+      return () => {}; // Return empty function as fallback
+    }
+  }
+
+  /**
    * Listen to notifications for specific user
    */
   listenToUserNotifications(userId, callback) {
@@ -312,6 +347,74 @@ class NotificationService {
     }
     const currentCount = this.reminderCounts.get(orderId) || 0;
     this.reminderCounts.set(orderId, currentCount + 1);
+  }
+
+  /**
+   * Send broadcast notification to all customers
+   */
+  async sendBroadcastNotification(notificationData) {
+    try {
+      // Get all customer users
+      const usersQuery = query(
+        collection(db, 'users'),
+        where('role', '==', 'customer')
+      );
+      
+      const usersSnapshot = await getDocs(usersQuery);
+      const customerUsers = usersSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+      // Send notification to all customers
+      const notificationPromises = customerUsers.map(customer => 
+        this.sendNotification({
+          ...notificationData,
+          userId: customer.id,
+          userRole: customer.role,
+          type: 'broadcast',
+          priority: 'normal'
+        })
+      );
+
+      await Promise.all(notificationPromises);
+      console.log(`Broadcast notification sent to ${customerUsers.length} customers`);
+      
+      return { success: true, recipientCount: customerUsers.length };
+    } catch (error) {
+      console.error('Error sending broadcast notification:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Send notification to specific user
+   */
+  async sendNotificationToUser(userId, notificationData) {
+    try {
+      // Get user data to determine role
+      const userDoc = await getDoc(doc(db, 'users', userId));
+      
+      if (!userDoc.exists()) {
+        throw new Error('User not found');
+      }
+      
+      const userData = userDoc.data();
+      
+      await this.sendNotification({
+        ...notificationData,
+        userId: userId,
+        userRole: userData.role,
+        type: 'individual',
+        priority: 'normal'
+      });
+
+      console.log(`Notification sent to user ${userId}`);
+      return { success: true };
+    } catch (error) {
+      console.error('Error sending notification to user:', error);
+      throw error;
+    }
   }
 
   /**

@@ -10,6 +10,11 @@ const Scheduling = () => {
   const [pickupCoordinates, setPickupCoordinates] = useState(null);
   const [locationLoading, setLocationLoading] = useState(false);
   
+  // Customer information (mandatory)
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [detailedLocation, setDetailedLocation] = useState(''); // Optional apartment/room details
+  
   // Existing scheduling state variables
   const [pickupDate, setPickupDate] = useState('');
   const [pickupTimeRange, setPickupTimeRange] = useState('');
@@ -72,13 +77,23 @@ const Scheduling = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!pickupAddress || !pickupDate || !pickupTimeRange || !deliveryDate || !deliveryTimeRange) {
-      alert('Please fill in all required fields including pickup location');
+    if (!customerName.trim() || !customerPhone.trim() || !pickupAddress || !pickupDate || !pickupTimeRange || !deliveryDate || !deliveryTimeRange) {
+      alert('Please fill in all required fields including your name, phone number, and pickup location');
+      return;
+    }
+
+    // Simple phone number validation
+    const phoneRegex = /^[0-9+\-\s()]{10,}$/;
+    if (!phoneRegex.test(customerPhone.trim())) {
+      alert('Please enter a valid phone number (at least 10 digits)');
       return;
     }
 
     // Store scheduling data
     const schedulingData = {
+      customerName: customerName.trim(),
+      customerPhone: customerPhone.trim(),
+      detailedLocation: detailedLocation.trim(),
       pickupAddress,
       pickupCoordinates,
       pickupLocationMethod,
@@ -112,6 +127,51 @@ const Scheduling = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="px-4 py-6 space-y-6">
+        {/* Customer Information Section */}
+        <div className="bg-white rounded-xl p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <svg className="w-5 h-5 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            Customer Information
+          </h2>
+          
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="customer-name" className="block text-sm font-medium text-gray-700 mb-2">
+                Full Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="customer-name"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                className="input-field"
+                placeholder="Enter your full name"
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="customer-phone" className="block text-sm font-medium text-gray-700 mb-2">
+                Phone Number <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="tel"
+                id="customer-phone"
+                value={customerPhone}
+                onChange={(e) => setCustomerPhone(e.target.value)}
+                className="input-field"
+                placeholder="e.g., +256 700 123 456 or 0700 123 456"
+                required
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                We'll use this number to contact you about pickup and delivery
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Location Selection Section */}
         <div className="bg-white rounded-xl p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
@@ -217,6 +277,35 @@ const Scheduling = () => {
             </div>
           )}
         </div>
+
+        {/* Detailed Location Section */}
+        {pickupAddress && (
+          <div className="bg-white rounded-xl p-6 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <svg className="w-5 h-5 text-orange-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+              Additional Location Details (Optional)
+            </h3>
+            
+            <div>
+              <label htmlFor="detailed-location" className="block text-sm font-medium text-gray-700 mb-2">
+                Apartment, Room Number, or Special Instructions
+              </label>
+              <textarea
+                id="detailed-location"
+                value={detailedLocation}
+                onChange={(e) => setDetailedLocation(e.target.value)}
+                className="input-field"
+                rows="3"
+                placeholder="e.g., Apartment 3B, Room 205, Gate code: 1234, Ask for security guard, etc."
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Help our delivery team find you easily with specific building details, room numbers, or access instructions
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Only show scheduling sections if location is selected */}
         {pickupAddress && (

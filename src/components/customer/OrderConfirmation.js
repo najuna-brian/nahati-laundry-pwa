@@ -4,6 +4,7 @@ import { db } from '../../services/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '../../services/auth';
 import { notificationService } from '../../services/notificationService';
+import { CURRENCIES } from '../../utils/constants';
 
 const OrderConfirmation = () => {
     const location = useLocation();
@@ -25,13 +26,24 @@ const OrderConfirmation = () => {
                 userEmail: currentUser.email || 'guest@nahati.com',
                 userName: currentUser.displayName || 'Guest User',
                 
+                // Customer information
+                customerName: schedulingData.customerName || currentUser.displayName || 'Guest User',
+                customerPhone: schedulingData.customerPhone || '',
+                detailedLocation: schedulingData.detailedLocation || '',
+                
                 // Service details
                 service: orderData.service,
                 weight: orderData.weight,
                 addOns: orderData.addOns || [],
                 specialInstructions: orderData.specialInstructions || '',
                 photos: [], // Photos would need special handling for Firebase Storage
+                currency: orderData.currency || 'UGX',
                 estimatedTotal: orderData.total || 0,
+                
+                // Location details
+                pickupAddress: schedulingData.pickupAddress || '',
+                pickupCoordinates: schedulingData.pickupCoordinates || null,
+                pickupLocationMethod: schedulingData.pickupLocationMethod || '',
                 
                 // Scheduling details
                 pickupDate: schedulingData.pickupDate,
@@ -62,14 +74,16 @@ const OrderConfirmation = () => {
             await notificationService.sendToAllStaffAndAdmins({
                 type: 'new_order',
                 title: 'New Order Received',
-                message: `Order #${orderId} from ${currentUser.displayName || currentUser.email}`,
+                message: `Order #${orderId} from ${schedulingData.customerName || currentUser.displayName || currentUser.email}`,
                 orderId: orderId,
                 priority: 'high',
                 data: {
                     orderId: orderId,
-                    customerName: currentUser.displayName || currentUser.email,
+                    customerName: schedulingData.customerName || currentUser.displayName || currentUser.email,
+                    customerPhone: schedulingData.customerPhone || '',
                     service: orderData.service?.name,
-                    pickupDate: schedulingData.pickupDate
+                    pickupDate: schedulingData.pickupDate,
+                    currency: orderData.currency || 'UGX'
                 }
             });
 
@@ -175,6 +189,11 @@ const OrderConfirmation = () => {
                             <span className="font-medium">{orderData.service?.name}</span>
                         </div>
                         
+                        <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                            <span className="text-gray-600">Currency:</span>
+                            <span className="font-medium">{orderData.currency || 'UGX'} ({CURRENCIES[orderData.currency || 'UGX']?.symbol || ''})</span>
+                        </div>
+                        
                         {orderData.weight ? (
                             <>
                                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
@@ -183,7 +202,7 @@ const OrderConfirmation = () => {
                                 </div>
                                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
                                     <span className="text-gray-600">Estimated Total:</span>
-                                    <span className="font-semibold text-green-600">UGX {orderData.total?.toLocaleString()}</span>
+                                    <span className="font-semibold text-green-600">{CURRENCIES[orderData.currency || 'UGX']?.formatPrice(orderData.total) || `${orderData.currency || 'UGX'} ${orderData.total?.toLocaleString()}`}</span>
                                 </div>
                             </>
                         ) : (
@@ -204,7 +223,7 @@ const OrderConfirmation = () => {
                                     {orderData.addOns.map((addOn, index) => (
                                         <div key={index} className="flex justify-between text-sm">
                                             <span className="text-gray-600">{addOn.name} x{addOn.quantity}</span>
-                                            <span>UGX {((addOn.pricePerKg || addOn.basePrice) * addOn.quantity).toLocaleString()}</span>
+                                            <span>{CURRENCIES[orderData.currency || 'UGX']?.formatPrice(((CURRENCIES[orderData.currency || 'UGX']?.addOns[addOn.id]?.pricePerKg || CURRENCIES[orderData.currency || 'UGX']?.addOns[addOn.id]?.basePrice || addOn.pricePerKg || addOn.basePrice) * addOn.quantity)) || `${orderData.currency || 'UGX'} ${((addOn.pricePerKg || addOn.basePrice) * addOn.quantity).toLocaleString()}`}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -212,6 +231,41 @@ const OrderConfirmation = () => {
                         )}
                     </div>
                 </div>
+
+                {/* Customer Information */}
+                {schedulingData && (schedulingData.customerName || schedulingData.customerPhone) && (
+                    <div className="bg-white rounded-xl p-6 shadow-sm">
+                        <h2 className="text-lg font-semibold text-gray-900 mb-4">Customer Information</h2>
+                        
+                        <div className="space-y-3">
+                            {schedulingData.customerName && (
+                                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                                    <span className="text-gray-600">Name:</span>
+                                    <span className="font-medium">{schedulingData.customerName}</span>
+                                </div>
+                            )}
+                            
+                            {schedulingData.customerPhone && (
+                                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                                    <span className="text-gray-600">Phone:</span>
+                                    <span className="font-medium">{schedulingData.customerPhone}</span>
+                                </div>
+                            )}
+                            
+                            {schedulingData.pickupAddress && (
+                                <div className="py-2 border-b border-gray-100">
+                                    <span className="text-gray-600 text-sm">Pickup Address:</span>
+                                    <p className="font-medium mt-1">{schedulingData.pickupAddress}</p>
+                                    {schedulingData.detailedLocation && (
+                                        <p className="text-sm text-gray-600 mt-1">
+                                            <strong>Details:</strong> {schedulingData.detailedLocation}
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
 
                 {/* Schedule Information */}
                 {schedulingData && (

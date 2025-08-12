@@ -19,7 +19,7 @@ import AdminLogin from './components/admin/AdminLogin';
 import AdminSetup from './components/admin/AdminSetup';
 import AdminRoutes from './components/admin/AdminRoutes';
 import StaffLogin from './components/staff/StaffLogin';
-import StaffDashboard from './components/staff/StaffDashboard';
+import StaffRoutes from './components/staff/StaffRoutes';
 import CustomerInvitation from './components/customer/CustomerInvitation';
 import FirebaseDataDemo from './components/FirebaseDataDemo';
 import FirebaseSetup from './components/FirebaseSetup';
@@ -99,6 +99,7 @@ function App() {
               <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
               <Route path="/admin/setup" element={<AdminSetup />} />
               <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/staff" element={<Navigate to="/staff/login" replace />} />
               <Route path="/staff/login" element={<StaffLogin />} />
               <Route path="/customer-invitation/:invitationCode" element={<CustomerInvitation />} />
               
@@ -114,7 +115,7 @@ function App() {
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               
               {/* Protected staff routes */}
-              <Route path="/staff/dashboard" element={<ProtectedRoute staffOnly><StaffDashboard /></ProtectedRoute>} />
+              <Route path="/staff/*" element={<ProtectedRoute staffOnly><StaffRoutes /></ProtectedRoute>} />
               
               {/* Protected admin routes */}
               <Route path="/admin/*" element={<ProtectedRoute adminOnly><AdminRoutes /></ProtectedRoute>} />

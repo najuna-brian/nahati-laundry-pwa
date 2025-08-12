@@ -99,6 +99,17 @@ export const AuthProvider = ({ children }) => {
         throw new Error('Access denied: Admin privileges required');
       }
       
+      if (expectedRole === 'staff' && userData?.role !== 'staff') {
+        await signOut(auth);
+        throw new Error('Access denied: Staff privileges required');
+      }
+      
+      // Ensure user is active
+      if (userData?.isActive === false) {
+        await signOut(auth);
+        throw new Error('Account has been deactivated. Contact administrator.');
+      }
+      
       return user;
     } catch (error) {
       console.error("Error during role-based login:", error);

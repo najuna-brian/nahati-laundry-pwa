@@ -55,7 +55,7 @@ class ErrorBoundary extends React.Component {
                     <pre className="text-red-700 whitespace-pre-wrap">{this.state.error && this.state.error.toString()}</pre>
                     
                     <p className="font-semibold text-red-800 mt-2">Stack Trace:</p>
-                    <pre className="text-red-700 whitespace-pre-wrap">{this.state.errorInfo.componentStack}</pre>
+                    <pre className="text-red-700 whitespace-pre-wrap">{this.state.errorInfo?.componentStack || 'No stack trace available'}</pre>
                   </div>
                 </details>
               )}

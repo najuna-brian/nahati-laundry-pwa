@@ -2,7 +2,10 @@ export const SERVICE_TYPES = {
   ORDINARY: {
     id: 'ordinary',
     name: "Ordinary",
-    pricePerKg: 4000,
+    pricePerKg: {
+      UGX: 4000,
+      USD: 1.10
+    },
     deliveryTime: "2 days",
     description: "Washed, not ironed, unscented",
     color: "bg-blue-100 text-blue-800"
@@ -10,7 +13,10 @@ export const SERVICE_TYPES = {
   STANDARD: {
     id: 'standard',
     name: "Standard",
-    pricePerKg: 5000,
+    pricePerKg: {
+      UGX: 5000,
+      USD: 1.35
+    },
     deliveryTime: "Next day",
     description: "Scented, ironed",
     color: "bg-green-100 text-green-800"
@@ -18,7 +24,10 @@ export const SERVICE_TYPES = {
   EXPRESS: {
     id: 'express',
     name: "Express",
-    pricePerKg: 8000,
+    pricePerKg: {
+      UGX: 8000,
+      USD: 2.15
+    },
     deliveryTime: "Same day",
     description: "Scented, ironed, skips the queue",
     color: "bg-red-100 text-red-800"
@@ -29,30 +38,67 @@ export const ADD_ONS = {
   DUVET: {
     id: 'duvet',
     name: "Duvet Cleaning",
-    basePrice: 10000,
-    maxPrice: 30000,
+    basePrice: {
+      UGX: 10000,
+      USD: 2.70
+    },
+    maxPrice: {
+      UGX: 30000,
+      USD: 8.10
+    },
     unit: 'piece',
     description: "Professional duvet cleaning"
   },
   SUIT: {
     id: 'suit',
     name: "Suit Cleaning",
-    basePrice: 10000,
-    maxPrice: 20000,
+    basePrice: {
+      UGX: 10000,
+      USD: 2.70
+    },
+    maxPrice: {
+      UGX: 20000,
+      USD: 5.40
+    },
     unit: 'piece',
     description: "Dry cleaning for suits"
   },
   SNEAKER: {
     id: 'sneaker',
     name: "Sneaker Cleaning",
-    pricePerKg: 5000,
+    pricePerKg: {
+      UGX: 5000,
+      USD: 1.35
+    },
     unit: 'kg',
     description: "Deep cleaning for sneakers"
   }
 };
 
-export const DELIVERY_FEE_PER_KM = 2000;
-export const MINIMUM_ORDER_AMOUNT = 10000;
+export const CURRENCIES = {
+  UGX: {
+    code: 'UGX',
+    symbol: 'UGX',
+    name: 'Ugandan Shilling',
+    format: (amount) => `UGX ${amount.toLocaleString()}`
+  },
+  USD: {
+    code: 'USD',
+    symbol: '$',
+    name: 'US Dollar',
+    format: (amount) => `$${amount.toFixed(2)}`
+  }
+};
+
+export const DELIVERY_FEE_PER_KM = {
+  UGX: 2000,
+  USD: 0.55
+};
+
+export const MINIMUM_ORDER_AMOUNT = {
+  UGX: 10000,
+  USD: 2.70
+};
 
 export const PAYMENT_METHODS = {
   MOBILE_MONEY: {

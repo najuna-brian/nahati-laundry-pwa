@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { notificationService } from '../../services/notifications';
+import { notificationService } from '../../services/notificationService';
 import { useFirebase } from '../../hooks/useFirebase';
 
 const NotificationCenter = () => {

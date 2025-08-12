@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { SERVICE_TYPES, ADD_ONS } from '../../utils/constants';
+import { SERVICE_TYPES, ADD_ONS, CURRENCIES } from '../../utils/constants';
 
 const ServiceSelection = () => {
   const [selectedService, setSelectedService] = useState(null);
@@ -9,6 +9,7 @@ const ServiceSelection = () => {
   const [numberOfPieces, setNumberOfPieces] = useState('');
   const [specialInstructions, setSpecialInstructions] = useState('');
   const [photos, setPhotos] = useState([]);
+  const [selectedCurrency, setSelectedCurrency] = useState('UGX'); // Default to UGX
   
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -47,10 +48,14 @@ const ServiceSelection = () => {
   const calculateTotal = () => {
     if (!selectedService) return 0;
     
+    const currencyData = CURRENCIES[selectedCurrency];
+    const servicePricing = currencyData.services[selectedService.id];
+    
     // If no weight provided, return 0 but allow order to proceed
-    const serviceTotal = weight ? selectedService.pricePerKg * parseFloat(weight) : 0;
+    const serviceTotal = weight ? servicePricing.pricePerKg * parseFloat(weight) : 0;
     const addOnsTotal = selectedAddOns.reduce((total, addOn) => {
-      const price = addOn.pricePerKg ? addOn.pricePerKg * addOn.quantity : addOn.basePrice * addOn.quantity;
+      const addOnPricing = currencyData.addOns[addOn.id];
+      const price = addOnPricing.pricePerKg ? addOnPricing.pricePerKg * addOn.quantity : addOnPricing.basePrice * addOn.quantity;
       return total + price;
     }, 0);
     
@@ -79,6 +84,7 @@ const ServiceSelection = () => {
       addOns: selectedAddOns,
       specialInstructions,
       photos,
+      currency: selectedCurrency,
       total: calculateTotal(),
       paymentOnDelivery: true // Add payment on delivery flag
     };
@@ -103,6 +109,26 @@ const ServiceSelection = () => {
       </div>
 
       <div className="px-4 py-6 space-y-6">
+        {/* Currency Selector */}
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Select Currency</h2>
+          <div className="flex space-x-3">
+            {Object.keys(CURRENCIES).map((currency) => (
+              <button
+                key={currency}
+                onClick={() => setSelectedCurrency(currency)}
+                className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-200 ${
+                  selectedCurrency === currency
+                    ? 'bg-blue-600 text-white shadow-lg transform scale-105'
+                    : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-blue-300'
+                }`}
+              >
+                {currency} ({CURRENCIES[currency].symbol})
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Service Types */}
         <div>
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Choose Your Service</h2>
@@ -140,7 +166,7 @@ const ServiceSelection = () => {
                     }`}>{service.description}</p>
                     <div className="flex items-center justify-between mt-2 ml-7">
                       <p className="text-lg font-semibold text-blue-600">
-                        UGX {service.pricePerKg.toLocaleString()}/kg
+                        {CURRENCIES[selectedCurrency].formatPrice(CURRENCIES[selectedCurrency].services[service.id].pricePerKg)}/kg
                       </p>
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${service.color}`}>
                         {service.deliveryTime}
@@ -221,9 +247,9 @@ const ServiceSelection = () => {
                         <h3 className="font-medium text-gray-900">{addOn.name}</h3>
                         <p className="text-sm text-gray-600">{addOn.description}</p>
                         <p className="text-sm font-medium text-blue-600 mt-1">
-                          {addOn.pricePerKg 
-                            ? `UGX ${addOn.pricePerKg.toLocaleString()}/${addOn.unit}`
-                            : `UGX ${addOn.basePrice.toLocaleString()} - ${addOn.maxPrice.toLocaleString()}/${addOn.unit}`
+                          {CURRENCIES[selectedCurrency].addOns[addOn.id].pricePerKg 
+                            ? `${CURRENCIES[selectedCurrency].formatPrice(CURRENCIES[selectedCurrency].addOns[addOn.id].pricePerKg)}/${addOn.unit}`
+                            : `${CURRENCIES[selectedCurrency].formatPrice(CURRENCIES[selectedCurrency].addOns[addOn.id].basePrice)} - ${CURRENCIES[selectedCurrency].formatPrice(CURRENCIES[selectedCurrency].addOns[addOn.id].maxPrice)}/${addOn.unit}`
                           }
                         </p>
                       </div>
@@ -318,22 +344,23 @@ const ServiceSelection = () => {
               <>
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-gray-600">Service Total:</span>
-                  <span className="font-medium">UGX {(selectedService.pricePerKg * parseFloat(weight)).toLocaleString()}</span>
+                  <span className="font-medium">{CURRENCIES[selectedCurrency].formatPrice(CURRENCIES[selectedCurrency].services[selectedService.id].pricePerKg * parseFloat(weight))}</span>
                 </div>
                 {selectedAddOns.length > 0 && (
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-gray-600">Add-ons Total:</span>
                     <span className="font-medium">
-                      UGX {selectedAddOns.reduce((total, addOn) => {
-                        const price = addOn.pricePerKg ? addOn.pricePerKg * addOn.quantity : addOn.basePrice * addOn.quantity;
+                      {CURRENCIES[selectedCurrency].formatPrice(selectedAddOns.reduce((total, addOn) => {
+                        const addOnPricing = CURRENCIES[selectedCurrency].addOns[addOn.id];
+                        const price = addOnPricing.pricePerKg ? addOnPricing.pricePerKg * addOn.quantity : addOnPricing.basePrice * addOn.quantity;
                         return total + price;
-                      }, 0).toLocaleString()}
+                      }, 0))}
                     </span>
                   </div>
                 )}
                 <div className="flex justify-between items-center text-lg font-semibold border-t pt-2">
                   <span>Total:</span>
-                  <span className="text-blue-600">UGX {calculateTotal().toLocaleString()}</span>
+                  <span className="text-blue-600">{CURRENCIES[selectedCurrency].formatPrice(calculateTotal())}</span>
                 </div>
               </>
             ) : null}
