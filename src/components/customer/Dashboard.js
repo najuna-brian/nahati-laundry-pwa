@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../services/auth';
 import { useUserOrders } from '../../hooks/useFirebase';
-import { SERVICE_TYPES } from '../../utils/constants';
+import { SERVICE_TYPES, CURRENCY_CONFIG } from '../../utils/constants';
 import LoadingSpinner from '../shared/LoadingSpinner';
 
 const Dashboard = () => {
@@ -178,7 +178,7 @@ const Dashboard = () => {
                   <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-200">{service.name}</h3>
                   <p className="text-sm text-gray-600 mt-1 group-hover:text-gray-700 transition-colors duration-200">{service.description}</p>
                   <p className="text-sm font-medium text-blue-600 mt-2 group-hover:text-blue-700 transition-colors duration-200">
-                    UGX {service.pricePerKg.toLocaleString()}/kg
+                    {CURRENCY_CONFIG.formatPrice(service.pricePerKg)}/kg
                   </p>
                 </div>
                 <div className="text-right">
@@ -230,7 +230,7 @@ const Dashboard = () => {
                       {order.service_type || 'Standard'} Service
                     </p>
                     <p className="text-sm text-gray-500">
-                      UGX {(order.total_price || 0).toLocaleString()}
+                      {CURRENCY_CONFIG.formatPrice(order.totalPrice || order.total_price || 0)}
                     </p>
                   </div>
                   <div className="text-right">

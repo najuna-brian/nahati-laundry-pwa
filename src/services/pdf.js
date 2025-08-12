@@ -1,7 +1,9 @@
 import jsPDF from 'jspdf';
+import { CURRENCY_CONFIG } from '../utils/constants';
 
 const generateInvoicePDF = (orderDetails) => {
     const { orderId, services, totalPrice, customerName, pickupTime, deliveryTime } = orderDetails;
+    // Using unified CURRENCY_CONFIG for all formatting
 
     const doc = new jsPDF();
 
@@ -15,11 +17,13 @@ const generateInvoicePDF = (orderDetails) => {
     
     doc.text('Services:', 20, 90);
     services.forEach((service, index) => {
-        doc.text(`${index + 1}. ${service.name} - UGX ${service.price}`, 20, 100 + (index * 10));
+        const formattedPrice = CURRENCY_CONFIG.formatPrice(service.price);
+        doc.text(`${index + 1}. ${service.name} - ${formattedPrice}`, 20, 100 + (index * 10));
     });
 
     doc.setFontSize(14);
-    doc.text(`Total Price: UGX ${totalPrice}`, 20, 100 + (services.length * 10) + 20);
+    const formattedTotal = CURRENCY_CONFIG.formatPrice(totalPrice);
+    doc.text(`Total Price: ${formattedTotal}`, 20, 100 + (services.length * 10) + 20);
 
     doc.save(`invoice_${orderId}.pdf`);
 };

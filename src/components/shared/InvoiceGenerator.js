@@ -1,11 +1,14 @@
 import React from 'react';
 import jsPDF from 'jspdf';
+import { CURRENCY_CONFIG } from '../../utils/constants';
 
 const InvoiceGenerator = ({ order, onDownload }) => {
   const generateInvoice = () => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.width;
     const pageHeight = doc.internal.pageSize.height;
+    
+    // Using unified CURRENCY_CONFIG for all formatting
 
     // Header
     doc.setFontSize(20);
@@ -66,8 +69,8 @@ const InvoiceGenerator = ({ order, onDownload }) => {
       doc.text(service.name || 'Laundry Service', 20, yPosition);
       doc.text((service.quantity || 1).toString(), 100, yPosition);
       doc.text(`${service.weight || order.weight || 0}kg`, 125, yPosition);
-      doc.text(`UGX ${service.price || 0}`, 150, yPosition);
-      doc.text(`UGX ${amount}`, 175, yPosition);
+      doc.text(CURRENCY_CONFIG.formatPrice(service.price || 0), 150, yPosition);
+      doc.text(CURRENCY_CONFIG.formatPrice(amount), 175, yPosition);
       
       yPosition += 10;
     });
@@ -78,8 +81,8 @@ const InvoiceGenerator = ({ order, onDownload }) => {
       doc.text('Laundry Service', 20, yPosition);
       doc.text('1', 100, yPosition);
       doc.text(`${order.weight || 0}kg`, 125, yPosition);
-      doc.text(`UGX ${amount}`, 150, yPosition);
-      doc.text(`UGX ${amount}`, 175, yPosition);
+      doc.text(CURRENCY_CONFIG.formatPrice(amount), 150, yPosition);
+      doc.text(CURRENCY_CONFIG.formatPrice(amount), 175, yPosition);
       total = amount;
       yPosition += 10;
     }
@@ -91,18 +94,18 @@ const InvoiceGenerator = ({ order, onDownload }) => {
 
     doc.setFont(undefined, 'bold');
     doc.text('SUBTOTAL:', 150, yPosition);
-    doc.text(`UGX ${total}`, 175, yPosition);
+    doc.text(CURRENCY_CONFIG.formatPrice(total), 175, yPosition);
     
     yPosition += 8;
     const tax = total * 0.18; // 18% VAT
     doc.text('VAT (18%):', 150, yPosition);
-    doc.text(`UGX ${tax.toFixed(0)}`, 175, yPosition);
+    doc.text(CURRENCY_CONFIG.formatPrice(tax), 175, yPosition);
     
     yPosition += 8;
     const grandTotal = total + tax;
     doc.setFontSize(12);
     doc.text('TOTAL:', 150, yPosition);
-    doc.text(`UGX ${grandTotal.toFixed(0)}`, 175, yPosition);
+    doc.text(CURRENCY_CONFIG.formatPrice(grandTotal), 175, yPosition);
 
     // Payment Information
     yPosition += 20;

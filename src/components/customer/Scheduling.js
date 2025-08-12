@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { TIME_SLOTS_24_7 } from '../../utils/constants';
+import { timeSlotsFullDay } from '../../utils/constants';
 import { calculatePickupDeliveryFee } from '../../utils/distance';
 
 const Scheduling = () => {
@@ -9,6 +9,7 @@ const Scheduling = () => {
   // Location state variables
   const [pickupLocationMethod, setPickupLocationMethod] = useState(''); // 'current', 'maps', 'manual'
   const [pickupAddress, setPickupAddress] = useState('');
+  const [manualAddressInput, setManualAddressInput] = useState(''); // Separate state for manual input
   const [pickupCoordinates, setPickupCoordinates] = useState(null);
   const [locationLoading, setLocationLoading] = useState(false);
   
@@ -25,7 +26,7 @@ const Scheduling = () => {
   const [deliveryTimeRange, setDeliveryTimeRange] = useState('');
   const [deliveryPreferredTime, setDeliveryPreferredTime] = useState('');
 
-  const timeRanges = TIME_SLOTS_24_7.map(slot => ({
+  const timeRanges = timeSlotsFullDay.map(slot => ({
     value: slot.toLowerCase().replace(/[^a-z0-9]/g, ''),
     label: slot
   }));
@@ -35,30 +36,64 @@ const Scheduling = () => {
     setLocationLoading(true);
     setPickupLocationMethod('current');
     
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by this browser. Please use manual entry.');
+      setLocationLoading(false);
+      setPickupLocationMethod('');
+      return;
+    }
+
+    const options = {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 60000
+    };
+    
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
           const lat = position.coords.latitude;
           const lng = position.coords.longitude;
           setPickupCoordinates({ lat, lng });
           
-          // For now, just set coordinates as address
+          // Try to get address using reverse geocoding (simplified version)
           // In production, you'd use Google Geocoding API
-          setPickupAddress(`Location: ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+          const addressString = `GPS Location: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+          setPickupAddress(addressString);
           setLocationLoading(false);
-        },
-        (error) => {
-          console.error('Error getting location:', error);
-          alert('Unable to get your current location. Please try manual entry or search.');
+          
+          console.log('GPS location obtained:', { lat, lng });
+        } catch (error) {
+          console.error('Error processing location:', error);
           setLocationLoading(false);
           setPickupLocationMethod('');
+          alert('Error processing your location. Please try manual entry.');
         }
-      );
-    } else {
-      alert('Geolocation is not supported by this browser. Please use manual entry.');
-      setLocationLoading(false);
-      setPickupLocationMethod('');
-    }
+      },
+      (error) => {
+        console.error('Geolocation error:', error);
+        setLocationLoading(false);
+        setPickupLocationMethod('');
+        
+        let errorMessage = 'Unable to get your current location. ';
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage += 'Location access was denied. Please allow location access or use manual entry.';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage += 'Location information is unavailable. Please try manual entry.';
+            break;
+          case error.TIMEOUT:
+            errorMessage += 'Location request timed out. Please try again or use manual entry.';
+            break;
+          default:
+            errorMessage += 'Please try manual entry or search on maps.';
+            break;
+        }
+        alert(errorMessage);
+      },
+      options
+    );
   };
 
   const openGoogleMaps = () => {
@@ -70,16 +105,45 @@ const Scheduling = () => {
   };
 
   const handleManualAddress = (address) => {
+    console.log('Manual address input:', address);
+    setManualAddressInput(address);
+    
+    // Set the pickup address immediately without trimming until user finishes
     setPickupAddress(address);
-    if (address.trim()) {
+    
+    if (address.length > 3) { // Only set method after meaningful input
       setPickupLocationMethod('manual');
+    } else if (address.length === 0) {
+      setPickupLocationMethod('');
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!customerName.trim() || !customerPhone.trim() || !pickupAddress || !pickupDate || !pickupTimeRange || !deliveryDate || !deliveryTimeRange) {
-      alert('Please fill in all required fields including your name, phone number, and pickup location');
+    
+    // Prevent default form behavior and stop propagation
+    e.stopPropagation();
+    
+    console.log('Form submitted', {
+      customerName: customerName.trim(),
+      customerPhone: customerPhone.trim(),
+      pickupAddress,
+      pickupDate,
+      pickupTimeRange,
+      deliveryDate,
+      deliveryTimeRange
+    });
+
+    // Validation
+    if (!customerName.trim()) {
+      alert('Please enter your full name');
+      document.getElementById('customer-name')?.focus();
+      return;
+    }
+
+    if (!customerPhone.trim()) {
+      alert('Please enter your phone number');
+      document.getElementById('customer-phone')?.focus();
       return;
     }
 
@@ -87,42 +151,75 @@ const Scheduling = () => {
     const phoneRegex = /^[0-9+\-\s()]{10,}$/;
     if (!phoneRegex.test(customerPhone.trim())) {
       alert('Please enter a valid phone number (at least 10 digits)');
+      document.getElementById('customer-phone')?.focus();
       return;
     }
 
-    // Get order data to calculate pickup/delivery fee with correct currency
-    const orderData = JSON.parse(localStorage.getItem('orderData') || '{}');
-    const currency = orderData.currency || 'UGX';
+    if (!pickupAddress) {
+      alert('Please select or enter your pickup location');
+      return;
+    }
 
-    // Calculate pickup/delivery fee based on distance
-    const distanceInfo = calculatePickupDeliveryFee(pickupCoordinates, currency);
+    if (!pickupDate) {
+      alert('Please select a pickup date');
+      return;
+    }
 
-    // Store scheduling data
-    const schedulingData = {
-      customerName: customerName.trim(),
-      customerPhone: customerPhone.trim(),
-      detailedLocation: detailedLocation.trim(),
-      pickupAddress,
-      pickupCoordinates,
-      pickupLocationMethod,
-      pickupDate,
-      pickupTimeRange,
-      pickupPreferredTime,
-      deliveryDate,
-      deliveryTimeRange,
-      deliveryPreferredTime,
-      paymentOnDelivery: true,
-      // Distance and fee information
-      distance: distanceInfo.distance,
-      roundedDistance: distanceInfo.roundedDistance,
-      pickupDeliveryFee: distanceInfo.fee,
-      currency: currency
-    };
+    if (!pickupTimeRange) {
+      alert('Please select a pickup time range');
+      return;
+    }
 
-    localStorage.setItem('schedulingData', JSON.stringify(schedulingData));
-    
-    // Skip payment and go directly to confirmation
-    navigate('/order-confirmation');
+    if (!deliveryDate) {
+      alert('Please select a delivery date');
+      return;
+    }
+
+    if (!deliveryTimeRange) {
+      alert('Please select a delivery time range');
+      return;
+    }
+
+    try {
+      // Get order data to calculate pickup/delivery fee with correct currency
+      const orderData = JSON.parse(localStorage.getItem('orderData') || '{}');
+      const currency = orderData.currency || 'UGX';
+
+      // Calculate pickup/delivery fee based on distance
+      const distanceInfo = calculatePickupDeliveryFee(pickupCoordinates, currency);
+
+      // Store scheduling data
+      const schedulingData = {
+        customerName: customerName.trim(),
+        customerPhone: customerPhone.trim(),
+        detailedLocation: detailedLocation.trim(),
+        pickupAddress,
+        pickupCoordinates,
+        pickupLocationMethod,
+        pickupDate,
+        pickupTimeRange,
+        pickupPreferredTime,
+        deliveryDate,
+        deliveryTimeRange,
+        deliveryPreferredTime,
+        paymentOnDelivery: true,
+        // Distance and fee information
+        distance: distanceInfo.distance,
+        roundedDistance: distanceInfo.roundedDistance,
+        pickupDeliveryFee: distanceInfo.fee,
+        currency: currency
+      };
+
+      localStorage.setItem('schedulingData', JSON.stringify(schedulingData));
+      
+      console.log('Navigating to order confirmation...');
+      
+      // Navigate to confirmation
+      navigate('/order-confirmation');
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      alert('An error occurred. Please try again.');
+    }
   };
 
   return (
@@ -257,8 +354,9 @@ const Scheduling = () => {
                   placeholder="Enter your pickup address (e.g., Plot 123, Kampala Road, Central Division, Kampala)"
                   className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   rows="3"
-                  value={pickupLocationMethod === 'manual' ? pickupAddress : ''}
+                  value={manualAddressInput}
                   onChange={(e) => handleManualAddress(e.target.value)}
+                  onFocus={() => console.log('Manual address field focused')}
                 />
               </div>
             </div>
@@ -267,18 +365,23 @@ const Scheduling = () => {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="font-medium text-gray-800 mb-1">Selected Pickup Location:</div>
-                  <div className="text-gray-700 mb-2">{pickupAddress}</div>
+                  <div className="text-gray-700 mb-2 break-words">{pickupAddress || 'No address set'}</div>
                   <div className="text-sm text-green-600 flex items-center">
                     <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                     Location confirmed - {pickupLocationMethod === 'current' ? 'GPS' : pickupLocationMethod === 'maps' ? 'Maps' : 'Manual'}
                   </div>
+                  {/* Debug info - remove in production */}
+                  <div className="text-xs text-gray-500 mt-1">
+                    Debug: Address length = {pickupAddress?.length || 0}, Method = {pickupLocationMethod}
+                  </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => {
                     setPickupAddress('');
+                    setManualAddressInput('');
                     setPickupLocationMethod('');
                     setPickupCoordinates(null);
                   }}
@@ -367,35 +470,23 @@ const Scheduling = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="pickup-time-range" className="block text-sm font-medium text-gray-700 mb-2">
                 Backup Time Range * <span className="text-gray-500">(If exact time unavailable)</span>
               </label>
-              <div className="grid grid-cols-2 gap-2">
+              <select
+                id="pickup-time-range"
+                value={pickupTimeRange}
+                onChange={(e) => setPickupTimeRange(e.target.value)}
+                className="input-field"
+                required
+              >
+                <option value="">Select a time range</option>
                 {timeRanges.map((range) => (
-                  <label
-                    key={range.value}
-                    className={`flex items-center p-3 border rounded-lg cursor-pointer transition duration-200 ${pickupTimeRange === range.value
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                  >
-                    <input
-                      type="radio"
-                      value={range.value}
-                      checked={pickupTimeRange === range.value}
-                      onChange={(e) => setPickupTimeRange(e.target.value)}
-                      className="sr-only"
-                    />
-                    <div className={`w-4 h-4 rounded-full border-2 mr-3 flex-shrink-0 ${pickupTimeRange === range.value ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
-                      }`}>
-                      {pickupTimeRange === range.value && (
-                        <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>
-                      )}
-                    </div>
-                    <span className="text-sm text-gray-900">{range.label}</span>
-                  </label>
+                  <option key={range.value} value={range.value}>
+                    {range.label}
+                  </option>
                 ))}
-              </div>
+              </select>
               <p className="text-xs text-blue-600 mt-2 font-medium">
                 🌟 We operate 24/7 for your convenience!
               </p>
@@ -447,35 +538,23 @@ const Scheduling = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="delivery-time-range" className="block text-sm font-medium text-gray-700 mb-2">
                 Backup Time Range * <span className="text-gray-500">(If exact time unavailable)</span>
               </label>
-              <div className="grid grid-cols-2 gap-2">
+              <select
+                id="delivery-time-range"
+                value={deliveryTimeRange}
+                onChange={(e) => setDeliveryTimeRange(e.target.value)}
+                className="input-field"
+                required
+              >
+                <option value="">Select a time range</option>
                 {timeRanges.map((range) => (
-                  <label
-                    key={range.value}
-                    className={`flex items-center p-3 border rounded-lg cursor-pointer transition duration-200 ${deliveryTimeRange === range.value
-                        ? 'border-green-500 bg-green-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                  >
-                    <input
-                      type="radio"
-                      value={range.value}
-                      checked={deliveryTimeRange === range.value}
-                      onChange={(e) => setDeliveryTimeRange(e.target.value)}
-                      className="sr-only"
-                    />
-                    <div className={`w-4 h-4 rounded-full border-2 mr-3 flex-shrink-0 ${deliveryTimeRange === range.value ? 'border-green-500 bg-green-500' : 'border-gray-300'
-                      }`}>
-                      {deliveryTimeRange === range.value && (
-                        <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>
-                      )}
-                    </div>
-                    <span className="text-sm text-gray-900">{range.label}</span>
-                  </label>
+                  <option key={range.value} value={range.value}>
+                    {range.label}
+                  </option>
                 ))}
-              </div>
+              </select>
               <p className="text-xs text-green-600 mt-2 font-medium">
                 🌟 24/7 delivery service available!
               </p>
@@ -499,12 +578,18 @@ const Scheduling = () => {
         </div>
 
         {/* Submit button */}
-        <button
-          type="submit"
-          className="btn-primary w-full"
-        >
-          Confirm Order Details
-        </button>
+        <div className="pt-4">
+          <button
+            type="submit"
+            className="btn-primary w-full py-4 text-lg font-semibold"
+            disabled={!customerName.trim() || !customerPhone.trim() || !pickupAddress || !pickupDate || !pickupTimeRange || !deliveryDate || !deliveryTimeRange}
+          >
+            {(!customerName.trim() || !customerPhone.trim() || !pickupAddress || !pickupDate || !pickupTimeRange || !deliveryDate || !deliveryTimeRange) 
+              ? 'Please complete all required fields'
+              : 'Confirm Order Details'
+            }
+          </button>
+        </div>
       </>
       )}
       </form>

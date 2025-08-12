@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../services/firebase';
-import { CURRENCIES } from '../../utils/constants';
+import { CURRENCY_CONFIG, SERVICE_TYPES, ADD_ONS } from '../../utils/constants';
 
 const WeightUpdateModal = ({ 
   order, 
@@ -20,15 +20,11 @@ const WeightUpdateModal = ({
 
     setLoading(true);
     try {
-      const currency = order.currency || 'UGX';
-      const currencyData = CURRENCIES[currency];
-      
       // Recalculate totals with actual weight
-      const serviceTotal = currencyData.services[order.service.id].pricePerKg * parseFloat(actualWeight);
+      const serviceTotal = order.service?.pricePerKg ? order.service.pricePerKg * parseFloat(actualWeight) : 0;
       
       const addOnsTotal = order.addOns?.reduce((total, addOn) => {
-        const addOnPricing = currencyData.addOns[addOn.id];
-        const price = addOnPricing?.pricePerKg ? addOnPricing.pricePerKg * addOn.quantity : addOnPricing?.basePrice * addOn.quantity;
+        const price = addOn.pricePerKg ? addOn.pricePerKg * addOn.quantity : addOn.basePrice * addOn.quantity;
         return total + (price || 0);
       }, 0) || 0;
 
@@ -45,7 +41,7 @@ const WeightUpdateModal = ({
           ...(order.notes || []),
           {
             timestamp: new Date().toISOString(),
-            note: `Weight updated from ${order.weight || 'estimated'} kg to ${actualWeight} kg. Final price: ${currencyData.formatPrice(finalPrice)}`,
+            note: `Weight updated from ${order.weight || 'estimated'} kg to ${actualWeight} kg. Final price: ${CURRENCY_CONFIG.formatPrice(finalPrice)}`,
             updatedBy: 'staff'
           }
         ]
@@ -68,13 +64,12 @@ const WeightUpdateModal = ({
 
   if (!isOpen) return null;
 
-  const currency = order.currency || 'UGX';
-  const currencyData = CURRENCIES[currency];
-
+  // Using unified CURRENCY_CONFIG - no need for dynamic currency access
+  
   // Calculate estimated new total
-  const newServiceTotal = actualWeight ? currencyData.services[order.service.id].pricePerKg * parseFloat(actualWeight) : 0;
+  const newServiceTotal = actualWeight ? SERVICE_TYPES[order.service.id].pricePerKg * parseFloat(actualWeight) : 0;
   const addOnsTotal = order.addOns?.reduce((total, addOn) => {
-    const addOnPricing = currencyData.addOns[addOn.id];
+    const addOnPricing = ADD_ONS.find(addon => addon.id === addOn.id);
     const price = addOnPricing?.pricePerKg ? addOnPricing.pricePerKg * addOn.quantity : addOnPricing?.basePrice * addOn.quantity;
     return total + (price || 0);
   }, 0) || 0;
@@ -119,24 +114,24 @@ const WeightUpdateModal = ({
               <div className="space-y-1 text-sm text-green-700">
                 <div className="flex justify-between">
                   <span>Service ({actualWeight} kg):</span>
-                  <span>{currencyData.formatPrice(newServiceTotal)}</span>
+                  <span>{CURRENCY_CONFIG.formatPrice(newServiceTotal)}</span>
                 </div>
                 {addOnsTotal > 0 && (
                   <div className="flex justify-between">
                     <span>Add-ons:</span>
-                    <span>{currencyData.formatPrice(addOnsTotal)}</span>
+                    <span>{CURRENCY_CONFIG.formatPrice(addOnsTotal)}</span>
                   </div>
                 )}
                 {pickupDeliveryFee > 0 && (
                   <div className="flex justify-between">
                     <span>Pickup & Delivery:</span>
-                    <span>{currencyData.formatPrice(pickupDeliveryFee)}</span>
+                    <span>{CURRENCY_CONFIG.formatPrice(pickupDeliveryFee)}</span>
                   </div>
                 )}
                 <div className="border-t pt-1 border-green-300">
                   <div className="flex justify-between font-bold">
                     <span>Final Total:</span>
-                    <span>{currencyData.formatPrice(newTotal)}</span>
+                    <span>{CURRENCY_CONFIG.formatPrice(newTotal)}</span>
                   </div>
                 </div>
               </div>

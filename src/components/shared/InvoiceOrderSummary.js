@@ -1,5 +1,5 @@
 import React from 'react';
-import { CURRENCIES } from '../../utils/constants';
+import { CURRENCY_CONFIG, SERVICE_TYPES, ADD_ONS } from '../../utils/constants';
 
 const InvoiceOrderSummary = ({ 
   orderData, 
@@ -7,8 +7,7 @@ const InvoiceOrderSummary = ({
   status = 'pending',
   onStatusChange 
 }) => {
-  const currency = orderData?.currency || 'UGX';
-  const currencyFormatter = CURRENCIES[currency];
+  // Using unified CURRENCY_CONFIG for all formatting
 
   const statusOptions = [
     { value: 'pending', label: 'Pending', color: 'bg-yellow-100 text-yellow-800', icon: '⏳' },
@@ -25,11 +24,11 @@ const InvoiceOrderSummary = ({
 
   // Calculate totals
   const serviceTotal = orderData?.weight 
-    ? currencyFormatter?.services[orderData.service?.id]?.pricePerKg * orderData.weight 
+    ? SERVICE_TYPES[orderData.service?.id]?.pricePerKg * orderData.weight 
     : 0;
 
   const addOnsTotal = orderData?.addOns?.reduce((total, addOn) => {
-    const addOnPricing = currencyFormatter?.addOns[addOn.id];
+    const addOnPricing = ADD_ONS.find(addon => addon.id === addOn.id);
     const price = addOnPricing?.pricePerKg ? addOnPricing.pricePerKg * addOn.quantity : addOnPricing?.basePrice * addOn.quantity;
     return total + (price || 0);
   }, 0) || 0;
@@ -117,15 +116,15 @@ const InvoiceOrderSummary = ({
               )}
             </div>
             <span className="font-medium">
-              {serviceTotal > 0 ? currencyFormatter?.formatPrice(serviceTotal) : 'TBD'}
+              {serviceTotal > 0 ? CURRENCY_CONFIG.formatPrice(serviceTotal) : 'TBD'}
             </span>
           </div>
 
           {orderData?.addOns?.map((addOn, index) => (
             <div key={index} className="flex justify-between items-center text-sm">
               <span className="text-gray-600">{addOn.name} x{addOn.quantity}</span>
-              <span>{currencyFormatter?.formatPrice(
-                (currencyFormatter?.addOns[addOn.id]?.pricePerKg || currencyFormatter?.addOns[addOn.id]?.basePrice || 0) * addOn.quantity
+              <span>{CURRENCY_CONFIG.formatPrice(
+                (ADD_ONS.find(a => a.id === addOn.id)?.pricePerKg || ADD_ONS.find(a => a.id === addOn.id)?.basePrice || 0) * addOn.quantity
               )}</span>
             </div>
           ))}
@@ -135,7 +134,7 @@ const InvoiceOrderSummary = ({
               <span className="text-gray-600">
                 Pickup & Delivery ({schedulingData.roundedDistance}km)
               </span>
-              <span>{currencyFormatter?.formatPrice(pickupDeliveryFee)}</span>
+              <span>{CURRENCY_CONFIG.formatPrice(pickupDeliveryFee)}</span>
             </div>
           )}
         </div>
@@ -170,26 +169,26 @@ const InvoiceOrderSummary = ({
           {serviceTotal > 0 && (
             <div className="flex justify-between text-sm">
               <span>Service Subtotal:</span>
-              <span>{currencyFormatter?.formatPrice(serviceTotal)}</span>
+              <span>{CURRENCY_CONFIG.formatPrice(serviceTotal)}</span>
             </div>
           )}
           {addOnsTotal > 0 && (
             <div className="flex justify-between text-sm">
               <span>Add-ons Subtotal:</span>
-              <span>{currencyFormatter?.formatPrice(addOnsTotal)}</span>
+              <span>{CURRENCY_CONFIG.formatPrice(addOnsTotal)}</span>
             </div>
           )}
           {pickupDeliveryFee > 0 && (
             <div className="flex justify-between text-sm">
               <span>Pickup & Delivery Fee:</span>
-              <span>{currencyFormatter?.formatPrice(pickupDeliveryFee)}</span>
+              <span>{CURRENCY_CONFIG.formatPrice(pickupDeliveryFee)}</span>
             </div>
           )}
           <div className="border-t pt-2">
             <div className="flex justify-between items-center text-lg font-bold">
               <span>Total Amount:</span>
               <span className="text-blue-600">
-                {grandTotal > 0 ? currencyFormatter?.formatPrice(grandTotal) : 'To be calculated'}
+                {grandTotal > 0 ? CURRENCY_CONFIG.formatPrice(grandTotal) : 'To be calculated'}
               </span>
             </div>
           </div>

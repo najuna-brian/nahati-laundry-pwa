@@ -67,28 +67,55 @@ const MyOrders = () => {
                   <div>
                     <h3 className="font-semibold text-gray-900">Order #{order.id.slice(-6)}</h3>
                     <p className="text-sm text-gray-600">{order.service_type} Service</p>
+                    {order.booking_type && (
+                      <p className="text-xs text-blue-600 capitalize">{order.booking_type} Booking</p>
+                    )}
                   </div>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium status-${order.status}`}>
                     {ORDER_STATUS_LABELS[order.status] || order.status}
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-2 gap-4 text-sm mb-3">
                   <div>
                     <p className="text-gray-600">Weight</p>
-                    <p className="font-medium">{order.weight} kg</p>
+                    <p className="font-medium">{order.weight || 'TBD'} kg</p>
                   </div>
                   <div>
                     <p className="text-gray-600">Total</p>
                     <p className="font-medium text-blue-600">UGX {order.total_price_ugx?.toLocaleString()}</p>
                   </div>
+                  {order.number_of_pieces && (
+                    <div>
+                      <p className="text-gray-600">Pieces</p>
+                      <p className="font-medium">{order.number_of_pieces} items</p>
+                    </div>
+                  )}
+                  {order.add_ons && order.add_ons.length > 0 && (
+                    <div>
+                      <p className="text-gray-600">Add-ons</p>
+                      <p className="font-medium">{order.add_ons.length} items</p>
+                    </div>
+                  )}
                 </div>
 
-                {order.pickup_time && (
-                  <div className="mt-3 pt-3 border-t border-gray-100">
-                    <p className="text-xs text-gray-500">
-                      Pickup: {new Date(order.pickup_time).toLocaleDateString()}
-                    </p>
+                {/* Scheduling Information */}
+                {(order.pickup_time || order.delivery_time) && (
+                  <div className="bg-gray-50 rounded-lg p-3 mb-3">
+                    <div className="grid grid-cols-1 gap-2 text-xs">
+                      {order.pickup_time && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">📦 Pickup:</span>
+                          <span className="font-medium">{new Date(order.pickup_time).toLocaleDateString()} at {new Date(order.pickup_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                        </div>
+                      )}
+                      {order.delivery_time && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">🚚 Delivery:</span>
+                          <span className="font-medium">{new Date(order.delivery_time).toLocaleDateString()} at {new Date(order.delivery_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
 

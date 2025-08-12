@@ -1,4 +1,4 @@
-import { BUSINESS_LOCATION, PICKUP_DELIVERY_FEE_PER_KM } from './constants';
+import { BUSINESS_LOCATION, pickupDeliveryFeePerKm } from './constants';
 
 /**
  * Calculate distance between two points using Haversine formula
@@ -25,10 +25,9 @@ export function calculateDistance(lat1, lng1, lat2, lng2) {
  * Calculate pickup/delivery fee based on distance
  * Rounds up to the nearest kilometer and applies the fee
  * @param {Object} pickupCoordinates - {lat, lng}
- * @param {string} currency - 'UGX' or 'USD'
  * @returns {Object} - {distance, roundedDistance, fee}
  */
-export function calculatePickupDeliveryFee(pickupCoordinates, currency = 'UGX') {
+export function calculatePickupDeliveryFee(pickupCoordinates) {
   if (!pickupCoordinates || !pickupCoordinates.lat || !pickupCoordinates.lng) {
     return { distance: 0, roundedDistance: 0, fee: 0 };
   }
@@ -43,9 +42,8 @@ export function calculatePickupDeliveryFee(pickupCoordinates, currency = 'UGX') 
   // Round up to the nearest kilometer (e.g., 3.4km becomes 4km)
   const roundedDistance = Math.ceil(distance);
   
-  // Calculate fee based on rounded distance
-  const feePerKm = PICKUP_DELIVERY_FEE_PER_KM[currency] || PICKUP_DELIVERY_FEE_PER_KM.UGX;
-  const fee = roundedDistance * feePerKm;
+  // Calculate fee based on rounded distance (UGX only)
+  const fee = roundedDistance * pickupDeliveryFeePerKm;
 
   return {
     distance: parseFloat(distance.toFixed(2)),

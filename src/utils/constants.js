@@ -2,10 +2,7 @@ export const SERVICE_TYPES = {
   ORDINARY: {
     id: 'ordinary',
     name: "Ordinary",
-    pricePerKg: {
-      UGX: 4000,
-      USD: 1.10
-    },
+    pricePerKg: 4000,
     deliveryTime: "2 days",
     description: "Washed, not ironed, unscented",
     color: "bg-blue-100 text-blue-800"
@@ -13,10 +10,7 @@ export const SERVICE_TYPES = {
   STANDARD: {
     id: 'standard',
     name: "Standard",
-    pricePerKg: {
-      UGX: 5000,
-      USD: 1.35
-    },
+    pricePerKg: 5000,
     deliveryTime: "Next day",
     description: "Scented, ironed",
     color: "bg-green-100 text-green-800"
@@ -24,10 +18,7 @@ export const SERVICE_TYPES = {
   EXPRESS: {
     id: 'express',
     name: "Express",
-    pricePerKg: {
-      UGX: 8000,
-      USD: 2.15
-    },
+    pricePerKg: 8000,
     deliveryTime: "Same day",
     description: "Scented, ironed, skips the queue",
     color: "bg-red-100 text-red-800"
@@ -38,62 +29,47 @@ export const ADD_ONS = {
   DUVET: {
     id: 'duvet',
     name: "Duvet Cleaning",
-    basePrice: {
-      UGX: 10000,
-      USD: 2.70
-    },
-    maxPrice: {
-      UGX: 30000,
-      USD: 8.10
-    },
+    basePrice: 10000,
+    maxPrice: 30000,
     unit: 'piece',
     description: "Professional duvet cleaning"
   },
   SUIT: {
     id: 'suit',
     name: "Suit Cleaning",
-    basePrice: {
-      UGX: 10000,
-      USD: 2.70
-    },
-    maxPrice: {
-      UGX: 20000,
-      USD: 5.40
-    },
+    basePrice: 10000,
+    maxPrice: 20000,
     unit: 'piece',
     description: "Dry cleaning for suits"
   },
   SNEAKER: {
     id: 'sneaker',
     name: "Sneaker Cleaning",
-    pricePerKg: {
-      UGX: 5000,
-      USD: 1.35
-    },
+    pricePerKg: 5000,
     unit: 'kg',
     description: "Deep cleaning for sneakers"
-  }
-};
-
-export const CURRENCIES = {
-  UGX: {
-    code: 'UGX',
-    symbol: 'UGX',
-    name: 'Ugandan Shilling',
-    format: (amount) => `UGX ${amount.toLocaleString()}`
   },
-  USD: {
-    code: 'USD',
-    symbol: '$',
-    name: 'US Dollar',
-    format: (amount) => `$${amount.toFixed(2)}`
+  OTHER: {
+    id: 'other',
+    name: "Other Service",
+    basePrice: 5000,
+    maxPrice: 50000,
+    unit: 'item',
+    description: "Custom service (please specify)",
+    customizable: true
   }
 };
 
-export const DELIVERY_FEE_PER_KM = {
-  UGX: 2000,
-  USD: 0.55
+// Single currency display (UGX) with USD conversion support
+export const CURRENCY_CONFIG = {
+  displayCurrency: 'UGX',
+  symbol: 'UGX',
+  formatPrice: (amount) => `UGX ${amount.toLocaleString()}`,
+  usdExchangeRate: 3700, // 1 USD = 3700 UGX
+  acceptsUSD: true,
+  paymentNote: 'We accept payments in both UGX and USD'
 };
+
 
 export const MINIMUM_ORDER_AMOUNT = {
   UGX: 10000,
@@ -143,11 +119,12 @@ export const ORDER_STATUS_LABELS = {
 };
 
 export const CONTACT_INFO = {
-  MTN_NUMBER: '+256394827687',
-  AIRTEL_NUMBER: '+256200981445',
-  WHATSAPP_NUMBER: '+256200981445',
-  EMAIL: 'info@nahatilaundry.com',
-  ADDRESS: 'Nahati Anytime Laundry, Kampala, Uganda'
+  mtnNumber: '+256394827687',
+  airtelNumber: '+256200981445',
+  whatsappNumber: '+256200981445',
+  email: 'info@nahatilaundry.com',
+  address: 'Nahati Anytime Laundry, Kampala, Uganda',
+  dryCleaningWhatsapp: 'https://wa.me/256200981445?text=Hi! I need dry cleaning services. Can you help me with pricing and pickup?'
 };
 
 export const BUSINESS_LOCATION = {
@@ -156,13 +133,10 @@ export const BUSINESS_LOCATION = {
   address: 'Nahati Anytime Laundry, Kampala, Uganda'
 };
 
-// Pickup and delivery fee per kilometer
-export const PICKUP_DELIVERY_FEE_PER_KM = {
-  UGX: 2000,
-  USD: 0.54
-};
+// Pickup and delivery fee per kilometer (UGX only)
+export const pickupDeliveryFeePerKm = 2000;
 
-export const TIME_SLOTS_24_7 = [
+export const timeSlotsFullDay = [
   '12:00 AM - 3:00 AM',
   '3:00 AM - 6:00 AM',
   '6:00 AM - 9:00 AM',
@@ -173,7 +147,7 @@ export const TIME_SLOTS_24_7 = [
   '9:00 PM - 12:00 AM'
 ];
 
-export const TIME_SLOTS = [
+export const timeSlots = [
   '8:00 AM - 10:00 AM',
   '10:00 AM - 12:00 PM', 
   '12:00 PM - 2:00 PM',
