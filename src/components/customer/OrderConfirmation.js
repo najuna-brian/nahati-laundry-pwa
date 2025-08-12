@@ -4,7 +4,7 @@ import { db } from '../../services/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '../../services/auth';
 import { notificationService } from '../../services/notificationService';
-import { CURRENCIES } from '../../utils/constants';
+import InvoiceOrderSummary from '../shared/InvoiceOrderSummary';
 
 const OrderConfirmation = () => {
     const location = useLocation();
@@ -52,6 +52,11 @@ const OrderConfirmation = () => {
                 deliveryDate: schedulingData.deliveryDate,
                 deliveryTimeRange: schedulingData.deliveryTimeRange,
                 deliveryPreferredTime: schedulingData.deliveryPreferredTime || '',
+                
+                // Distance and fee information
+                distance: schedulingData.distance || 0,
+                roundedDistance: schedulingData.roundedDistance || 0,
+                pickupDeliveryFee: schedulingData.pickupDeliveryFee || 0,
                 
                 // Order status
                 status: 'pending',
@@ -174,63 +179,12 @@ const OrderConfirmation = () => {
             </div>
 
             <div className="px-4 py-6 space-y-6">
-                {/* Order Summary */}
-                <div className="bg-white rounded-xl p-6 shadow-sm">
-                    <h2 className="text-lg font-semibold text-gray-900 mb-4">Order Summary</h2>
-                    
-                    <div className="space-y-3">
-                        <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                            <span className="text-gray-600">Order ID:</span>
-                            <span className="font-semibold text-blue-600">{orderId}</span>
-                        </div>
-                        
-                        <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                            <span className="text-gray-600">Service:</span>
-                            <span className="font-medium">{orderData.service?.name}</span>
-                        </div>
-                        
-                        <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                            <span className="text-gray-600">Currency:</span>
-                            <span className="font-medium">{orderData.currency || 'UGX'} ({CURRENCIES[orderData.currency || 'UGX']?.symbol || ''})</span>
-                        </div>
-                        
-                        {orderData.weight ? (
-                            <>
-                                <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                                    <span className="text-gray-600">Weight:</span>
-                                    <span className="font-medium">{orderData.weight} kg</span>
-                                </div>
-                                <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                                    <span className="text-gray-600">Estimated Total:</span>
-                                    <span className="font-semibold text-green-600">{CURRENCIES[orderData.currency || 'UGX']?.formatPrice(orderData.total) || `${orderData.currency || 'UGX'} ${orderData.total?.toLocaleString()}`}</span>
-                                </div>
-                            </>
-                        ) : (
-                            <div className="py-2 border-b border-gray-100">
-                                <div className="bg-blue-50 p-3 rounded-lg">
-                                    <p className="text-sm text-blue-700">
-                                        💰 <strong>Payment on Delivery</strong><br/>
-                                        Final price will be calculated based on actual weight during pickup
-                                    </p>
-                                </div>
-                            </div>
-                        )}
-                        
-                        {orderData.addOns?.length > 0 && (
-                            <div className="py-2">
-                                <span className="text-gray-600 text-sm">Add-ons:</span>
-                                <div className="mt-1">
-                                    {orderData.addOns.map((addOn, index) => (
-                                        <div key={index} className="flex justify-between text-sm">
-                                            <span className="text-gray-600">{addOn.name} x{addOn.quantity}</span>
-                                            <span>{CURRENCIES[orderData.currency || 'UGX']?.formatPrice(((CURRENCIES[orderData.currency || 'UGX']?.addOns[addOn.id]?.pricePerKg || CURRENCIES[orderData.currency || 'UGX']?.addOns[addOn.id]?.basePrice || addOn.pricePerKg || addOn.basePrice) * addOn.quantity)) || `${orderData.currency || 'UGX'} ${((addOn.pricePerKg || addOn.basePrice) * addOn.quantity).toLocaleString()}`}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
+                {/* Invoice-Style Order Summary */}
+                <InvoiceOrderSummary 
+                    orderData={{ ...orderData, orderId }}
+                    schedulingData={schedulingData}
+                    status="pending"
+                />
 
                 {/* Customer Information */}
                 {schedulingData && (schedulingData.customerName || schedulingData.customerPhone) && (

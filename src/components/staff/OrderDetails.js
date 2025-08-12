@@ -3,11 +3,14 @@ import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useAuth } from '../../services/auth';
 import { notificationService } from '../../services/notificationService';
+import WeightUpdateModal from './WeightUpdateModal';
+import InvoiceOrderSummary from '../shared/InvoiceOrderSummary';
 
 const OrderDetails = ({ orderId, onClose, onStatusUpdate }) => {
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState(false);
+    const [showWeightModal, setShowWeightModal] = useState(false);
     const { currentUser } = useAuth();
 
     useEffect(() => {
@@ -120,6 +123,13 @@ const OrderDetails = ({ orderId, onClose, onStatusUpdate }) => {
         return statusFlow[currentStatus] || [];
     };
 
+    const handleWeightUpdated = (updatedOrder) => {
+        setOrder(updatedOrder);
+        if (onStatusUpdate) {
+            onStatusUpdate(updatedOrder);
+        }
+    };
+
     if (loading) {
         return (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -180,178 +190,55 @@ const OrderDetails = ({ orderId, onClose, onStatusUpdate }) => {
                 </div>
 
                 <div className="p-6 space-y-6">
-                    {/* Customer Information */}
-                    <div className="border rounded-lg p-4">
-                        <h3 className="font-semibold text-lg mb-3 flex items-center">
-                            👤 Customer Information
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <p className="text-sm text-gray-600">Name</p>
-                                <p className="font-medium">{order.userName || 'Not provided'}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-gray-600">Email</p>
-                                <p className="font-medium">{order.userEmail || 'Not provided'}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-gray-600">Phone</p>
-                                <p className="font-medium">{order.userPhone || 'Not provided'}</p>
-                            </div>
-                        </div>
-                    </div>
+                    {/* Invoice-Style Order Summary with Status Update */}
+                    <InvoiceOrderSummary 
+                        orderData={order}
+                        schedulingData={order}
+                        status={order.status}
+                        onStatusChange={updateOrderStatus}
+                    />
 
-                    {/* Service Details */}
-                    <div className="border rounded-lg p-4">
-                        <h3 className="font-semibold text-lg mb-3 flex items-center">
-                            🧺 Service Details
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <p className="text-sm text-gray-600">Service Type</p>
-                                <p className="font-medium">{order.service?.name || 'Not specified'}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-gray-600">Price per KG</p>
-                                <p className="font-medium">UGX {order.service?.price || 'TBD'}</p>
-                            </div>
-                            
-                            {order.weight ? (
+                    {/* Weight Update Section */}
+                    {!order.actualWeight && (order.status === 'picked_up' || order.status === 'pending') && (
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm text-gray-600">Weight</p>
-                                    <p className="font-medium">{order.weight} kg</p>
+                                    <h3 className="font-medium text-yellow-800">⚖️ Weight Not Confirmed</h3>
+                                    <p className="text-sm text-yellow-700 mt-1">
+                                        Update the actual weight to calculate final pricing
+                                    </p>
                                 </div>
-                            ) : (
-                                <div className="col-span-2">
-                                    <div className="bg-yellow-50 border border-yellow-200 p-3 rounded">
-                                        <p className="text-sm text-yellow-800">
-                                            ⚖️ Weight to be determined during pickup
-                                        </p>
-                                    </div>
-                                </div>
-                            )}
-                            
-                            {order.specialInstructions && (
-                                <div className="col-span-2">
-                                    <p className="text-sm text-gray-600">Special Instructions</p>
-                                    <p className="font-medium bg-gray-50 p-2 rounded">{order.specialInstructions}</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Schedule Information */}
-                    <div className="border rounded-lg p-4">
-                        <h3 className="font-semibold text-lg mb-3 flex items-center">
-                            📅 Schedule
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="border-l-4 border-green-500 pl-4">
-                                <h4 className="font-medium text-green-600 mb-2">📍 Pickup</h4>
-                                <p className="text-sm"><strong>Date:</strong> {order.pickupDate || 'Not scheduled'}</p>
-                                <p className="text-sm"><strong>Time:</strong> {order.pickupTimeRange || 'Not scheduled'}</p>
-                                {order.pickupPreferredTime && (
-                                    <p className="text-sm"><strong>Preferred:</strong> {order.pickupPreferredTime}</p>
-                                )}
-                            </div>
-                            <div className="border-l-4 border-blue-500 pl-4">
-                                <h4 className="font-medium text-blue-600 mb-2">🚛 Delivery</h4>
-                                <p className="text-sm"><strong>Date:</strong> {order.deliveryDate || 'Not scheduled'}</p>
-                                <p className="text-sm"><strong>Time:</strong> {order.deliveryTimeRange || 'Not scheduled'}</p>
-                                {order.deliveryPreferredTime && (
-                                    <p className="text-sm"><strong>Preferred:</strong> {order.deliveryPreferredTime}</p>
-                                )}
+                                <button
+                                    onClick={() => setShowWeightModal(true)}
+                                    className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors"
+                                >
+                                    Update Weight
+                                </button>
                             </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* Status Update Actions */}
                     <div className="border rounded-lg p-4">
                         <h3 className="font-semibold text-lg mb-3 flex items-center">
-                            🔄 Update Status
+                            � Status Actions
                         </h3>
-                        
-                        {getNextStatusOptions(order.status).length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                {getNextStatusOptions(order.status).map(nextStatus => (
-                                    <button 
-                                        key={nextStatus}
-                                        onClick={() => updateOrderStatus(nextStatus)}
-                                        disabled={updating}
-                                        className="bg-blue-600 text-white px-4 py-3 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                    >
-                                        {updating ? (
-                                            <div className="flex items-center justify-center">
-                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                                Updating...
-                                            </div>
-                                        ) : (
-                                            <>
-                                                {nextStatus === 'picked_up' && '📦 Mark as Picked Up'}
-                                                {nextStatus === 'washing' && '🧼 Start Washing'}
-                                                {nextStatus === 'drying' && '💨 Start Drying'}
-                                                {nextStatus === 'pressing' && '👔 Start Pressing'}
-                                                {nextStatus === 'ready' && '✅ Mark as Ready'}
-                                                {nextStatus === 'out_for_delivery' && '🚛 Out for Delivery'}
-                                                {nextStatus === 'delivered' && '📍 Mark as Delivered'}
-                                            </>
-                                        )}
-                                    </button>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
-                                <p className="text-green-800">
-                                    ✅ This order has completed the workflow or no further actions are available.
-                                </p>
-                            </div>
+                        <div className="flex flex-wrap gap-2">
+                            {getNextStatusOptions(order.status).map(status => (
+                                <button
+                                    key={status}
+                                    onClick={() => updateOrderStatus(status)}
+                                    disabled={updating}
+                                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-gray-400 transition-colors"
+                                >
+                                    {updating ? 'Updating...' : `Mark as ${status.replace('_', ' ')}`}
+                                </button>
+                            ))}
+                        </div>
+                        {getNextStatusOptions(order.status).length === 0 && (
+                            <p className="text-gray-600 text-sm">No status updates available for current status.</p>
                         )}
                     </div>
-
-                    {/* Order Timeline */}
-                    {order.status !== 'pending' && (
-                        <div className="border rounded-lg p-4">
-                            <h3 className="font-semibold text-lg mb-3 flex items-center">
-                                📋 Order Timeline
-                            </h3>
-                            <div className="space-y-2">
-                                <div className="flex items-center text-sm">
-                                    <span className="w-24 font-medium">Created:</span>
-                                    <span>{order.createdAt?.toDate?.()?.toLocaleString() || 'Just now'}</span>
-                                </div>
-                                {order.picked_upAt && (
-                                    <div className="flex items-center text-sm">
-                                        <span className="w-24 font-medium">Picked up:</span>
-                                        <span>{order.picked_upAt?.toDate?.()?.toLocaleString()}</span>
-                                    </div>
-                                )}
-                                {order.washingAt && (
-                                    <div className="flex items-center text-sm">
-                                        <span className="w-24 font-medium">Washing:</span>
-                                        <span>{order.washingAt?.toDate?.()?.toLocaleString()}</span>
-                                    </div>
-                                )}
-                                {order.dryingAt && (
-                                    <div className="flex items-center text-sm">
-                                        <span className="w-24 font-medium">Drying:</span>
-                                        <span>{order.dryingAt?.toDate?.()?.toLocaleString()}</span>
-                                    </div>
-                                )}
-                                {order.readyAt && (
-                                    <div className="flex items-center text-sm">
-                                        <span className="w-24 font-medium">Ready:</span>
-                                        <span>{order.readyAt?.toDate?.()?.toLocaleString()}</span>
-                                    </div>
-                                )}
-                                {order.deliveredAt && (
-                                    <div className="flex items-center text-sm">
-                                        <span className="w-24 font-medium">Delivered:</span>
-                                        <span>{order.deliveredAt?.toDate?.()?.toLocaleString()}</span>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
                 </div>
 
                 {/* Footer */}
@@ -364,6 +251,14 @@ const OrderDetails = ({ orderId, onClose, onStatusUpdate }) => {
                     </button>
                 </div>
             </div>
+
+            {/* Weight Update Modal */}
+            <WeightUpdateModal
+                order={order}
+                isOpen={showWeightModal}
+                onClose={() => setShowWeightModal(false)}
+                onWeightUpdated={handleWeightUpdated}
+            />
         </div>
     );
 };

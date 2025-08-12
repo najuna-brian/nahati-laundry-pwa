@@ -63,8 +63,31 @@ const ServiceSelection = () => {
   };
 
   const handlePhotoUpload = (e) => {
-    const files = Array.from(e.target.files);
-    setPhotos(prev => [...prev, ...files]);
+    try {
+      const files = Array.from(e.target.files);
+      
+      // Filter only image files
+      const imageFiles = files.filter(file => file.type.startsWith('image/'));
+      
+      if (imageFiles.length !== files.length) {
+        alert('Only image files are allowed');
+      }
+      
+      // Check file size (max 5MB per file)
+      const validFiles = imageFiles.filter(file => file.size <= 5 * 1024 * 1024);
+      
+      if (validFiles.length !== imageFiles.length) {
+        alert('Some files are too large. Maximum file size is 5MB');
+      }
+      
+      setPhotos(prev => [...prev, ...validFiles]);
+      
+      // Clear the input
+      e.target.value = '';
+    } catch (error) {
+      console.error('Error handling photo upload:', error);
+      alert('Something went wrong while uploading photos. Please try again.');
+    }
   };
 
   const removePhoto = (index) => {
@@ -316,21 +339,49 @@ const ServiceSelection = () => {
           </div>
           {photos.length > 0 && (
             <div className="mt-3 grid grid-cols-3 gap-2">
-              {photos.map((photo, index) => (
-                <div key={index} className="relative">
-                  <img
-                    src={URL.createObjectURL(photo)}
-                    alt={`Upload ${index + 1}`}
-                    className="w-full h-20 object-cover rounded-lg"
-                  />
-                  <button
-                    onClick={() => removePhoto(index)}
-                    className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
+              {photos.map((photo, index) => {
+                try {
+                  const photoUrl = URL.createObjectURL(photo);
+                  return (
+                    <div key={index} className="relative">
+                      <img
+                        src={photoUrl}
+                        alt={`Upload ${index + 1}`}
+                        className="w-full h-20 object-cover rounded-lg"
+                        onLoad={() => {
+                          // Clean up object URL after image loads
+                          setTimeout(() => URL.revokeObjectURL(photoUrl), 1000);
+                        }}
+                        onError={(e) => {
+                          console.error('Error loading photo:', e);
+                          e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDE1Ljc0TDEyIDIyTDEwLjkxIDE1Ljc0TDQgOUwxMC45MSA4LjI2TDEyIDJaIiBmaWxsPSIjOTk5Ii8+Cjwvc3ZnPgo=';
+                        }}
+                      />
+                      <button
+                        onClick={() => removePhoto(index)}
+                        className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  );
+                } catch (error) {
+                  console.error('Error creating object URL for photo:', error);
+                  return (
+                    <div key={index} className="relative">
+                      <div className="w-full h-20 bg-gray-200 rounded-lg flex items-center justify-center">
+                        <span className="text-xs text-gray-500">Error loading image</span>
+                      </div>
+                      <button
+                        onClick={() => removePhoto(index)}
+                        className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  );
+                }
+              })}
             </div>
           )}
         </div>

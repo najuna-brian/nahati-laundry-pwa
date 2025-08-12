@@ -156,6 +156,23 @@ export const BUSINESS_LOCATION = {
   address: 'Nahati Anytime Laundry, Kampala, Uganda'
 };
 
+// Pickup and delivery fee per kilometer
+export const PICKUP_DELIVERY_FEE_PER_KM = {
+  UGX: 2000,
+  USD: 0.54
+};
+
+export const TIME_SLOTS_24_7 = [
+  '12:00 AM - 3:00 AM',
+  '3:00 AM - 6:00 AM',
+  '6:00 AM - 9:00 AM',
+  '9:00 AM - 12:00 PM',
+  '12:00 PM - 3:00 PM',
+  '3:00 PM - 6:00 PM',
+  '6:00 PM - 9:00 PM',
+  '9:00 PM - 12:00 AM'
+];
+
 export const TIME_SLOTS = [
   '8:00 AM - 10:00 AM',
   '10:00 AM - 12:00 PM', 

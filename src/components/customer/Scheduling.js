@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { TIME_SLOTS_24_7 } from '../../utils/constants';
+import { calculatePickupDeliveryFee } from '../../utils/distance';
 
 const Scheduling = () => {
   const navigate = useNavigate();
@@ -23,11 +25,10 @@ const Scheduling = () => {
   const [deliveryTimeRange, setDeliveryTimeRange] = useState('');
   const [deliveryPreferredTime, setDeliveryPreferredTime] = useState('');
 
-  const timeRanges = [
-    { value: 'morning', label: 'Morning (8:00 AM - 12:00 PM)' },
-    { value: 'afternoon', label: 'Afternoon (12:00 PM - 4:00 PM)' },
-    { value: 'evening', label: 'Evening (4:00 PM - 8:00 PM)' }
-  ];
+  const timeRanges = TIME_SLOTS_24_7.map(slot => ({
+    value: slot.toLowerCase().replace(/[^a-z0-9]/g, ''),
+    label: slot
+  }));
 
   // Location handling functions
   const getCurrentLocation = () => {
@@ -89,6 +90,13 @@ const Scheduling = () => {
       return;
     }
 
+    // Get order data to calculate pickup/delivery fee with correct currency
+    const orderData = JSON.parse(localStorage.getItem('orderData') || '{}');
+    const currency = orderData.currency || 'UGX';
+
+    // Calculate pickup/delivery fee based on distance
+    const distanceInfo = calculatePickupDeliveryFee(pickupCoordinates, currency);
+
     // Store scheduling data
     const schedulingData = {
       customerName: customerName.trim(),
@@ -103,7 +111,12 @@ const Scheduling = () => {
       deliveryDate,
       deliveryTimeRange,
       deliveryPreferredTime,
-      paymentOnDelivery: true
+      paymentOnDelivery: true,
+      // Distance and fee information
+      distance: distanceInfo.distance,
+      roundedDistance: distanceInfo.roundedDistance,
+      pickupDeliveryFee: distanceInfo.fee,
+      currency: currency
     };
 
     localStorage.setItem('schedulingData', JSON.stringify(schedulingData));
@@ -335,11 +348,29 @@ const Scheduling = () => {
               />
             </div>
 
+            {/* Preferred Exact Time First */}
+            <div>
+              <label htmlFor="pickup-preferred-time" className="block text-sm font-medium text-gray-700 mb-2">
+                🕐 Preferred Exact Pickup Time <span className="text-blue-600 font-medium">(Recommended)</span>
+              </label>
+              <input
+                type="time"
+                id="pickup-preferred-time"
+                value={pickupPreferredTime}
+                onChange={(e) => setPickupPreferredTime(e.target.value)}
+                className="input-field"
+                placeholder="Select your preferred time"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                💡 Specify your exact preferred time for better service scheduling
+              </p>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Pickup Time Range *
+                Backup Time Range * <span className="text-gray-500">(If exact time unavailable)</span>
               </label>
-              <div className="grid grid-cols-1 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 {timeRanges.map((range) => (
                   <label
                     key={range.value}
@@ -355,36 +386,20 @@ const Scheduling = () => {
                       onChange={(e) => setPickupTimeRange(e.target.value)}
                       className="sr-only"
                     />
-                    <div className={`w-4 h-4 rounded-full border-2 mr-3 ${pickupTimeRange === range.value ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
+                    <div className={`w-4 h-4 rounded-full border-2 mr-3 flex-shrink-0 ${pickupTimeRange === range.value ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
                       }`}>
                       {pickupTimeRange === range.value && (
                         <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>
                       )}
                     </div>
-                    <span className="text-gray-900">{range.label}</span>
+                    <span className="text-sm text-gray-900">{range.label}</span>
                   </label>
                 ))}
               </div>
+              <p className="text-xs text-blue-600 mt-2 font-medium">
+                🌟 We operate 24/7 for your convenience!
+              </p>
             </div>
-
-            {pickupTimeRange && (
-              <div>
-                <label htmlFor="pickup-preferred-time" className="block text-sm font-medium text-gray-700 mb-2">
-                  Preferred Exact Time <span className="text-gray-400">(Optional)</span>
-                </label>
-                <input
-                  type="time"
-                  id="pickup-preferred-time"
-                  value={pickupPreferredTime}
-                  onChange={(e) => setPickupPreferredTime(e.target.value)}
-                  className="input-field"
-                  placeholder="e.g., 10:30 AM"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  We'll try our best to accommodate your preferred time within the selected range.
-                </p>
-              </div>
-            )}
           </div>
         </div>
 
@@ -413,11 +428,29 @@ const Scheduling = () => {
               />
             </div>
 
+            {/* Preferred Exact Time First */}
+            <div>
+              <label htmlFor="delivery-preferred-time" className="block text-sm font-medium text-gray-700 mb-2">
+                🕐 Preferred Exact Delivery Time <span className="text-green-600 font-medium">(Recommended)</span>
+              </label>
+              <input
+                type="time"
+                id="delivery-preferred-time"
+                value={deliveryPreferredTime}
+                onChange={(e) => setDeliveryPreferredTime(e.target.value)}
+                className="input-field"
+                placeholder="Select your preferred time"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                💡 Specify your exact preferred time for better delivery scheduling
+              </p>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Delivery Time Range *
+                Backup Time Range * <span className="text-gray-500">(If exact time unavailable)</span>
               </label>
-              <div className="grid grid-cols-1 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 {timeRanges.map((range) => (
                   <label
                     key={range.value}
@@ -433,36 +466,20 @@ const Scheduling = () => {
                       onChange={(e) => setDeliveryTimeRange(e.target.value)}
                       className="sr-only"
                     />
-                    <div className={`w-4 h-4 rounded-full border-2 mr-3 ${deliveryTimeRange === range.value ? 'border-green-500 bg-green-500' : 'border-gray-300'
+                    <div className={`w-4 h-4 rounded-full border-2 mr-3 flex-shrink-0 ${deliveryTimeRange === range.value ? 'border-green-500 bg-green-500' : 'border-gray-300'
                       }`}>
                       {deliveryTimeRange === range.value && (
                         <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>
                       )}
                     </div>
-                    <span className="text-gray-900">{range.label}</span>
+                    <span className="text-sm text-gray-900">{range.label}</span>
                   </label>
                 ))}
               </div>
+              <p className="text-xs text-green-600 mt-2 font-medium">
+                🌟 24/7 delivery service available!
+              </p>
             </div>
-
-            {deliveryTimeRange && (
-              <div>
-                <label htmlFor="delivery-preferred-time" className="block text-sm font-medium text-gray-700 mb-2">
-                  Preferred Exact Time <span className="text-gray-400">(Optional)</span>
-                </label>
-                <input
-                  type="time"
-                  id="delivery-preferred-time"
-                  value={deliveryPreferredTime}
-                  onChange={(e) => setDeliveryPreferredTime(e.target.value)}
-                  className="input-field"
-                  placeholder="e.g., 3:30 PM"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  We'll try our best to accommodate your preferred time within the selected range.
-                </p>
-              </div>
-            )}
           </div>
         </div>
 
