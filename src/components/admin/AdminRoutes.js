@@ -8,6 +8,7 @@ import DeliveryManagement from '../admin/DeliveryManagement';
 import Reports from '../admin/Reports';
 import NotificationCenter from '../admin/NotificationCenter';
 import StaffCustomerRegistration from '../admin/StaffCustomerRegistration';
+import StaffManagement from '../admin/StaffManagement';
 
 const AdminRoutes = () => {
   return (
@@ -15,6 +16,7 @@ const AdminRoutes = () => {
       <Route path="/dashboard" element={<AdminDashboard />} />
       <Route path="/orders" element={<OrderManagement />} />
       <Route path="/customers" element={<CustomerManagement />} />
+      <Route path="/staff" element={<StaffManagement />} />
       <Route path="/inventory" element={<Inventory />} />
       <Route path="/delivery" element={<DeliveryManagement />} />
       <Route path="/reports" element={<Reports />} />

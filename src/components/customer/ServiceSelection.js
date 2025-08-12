@@ -6,6 +6,7 @@ const ServiceSelection = () => {
   const [selectedService, setSelectedService] = useState(null);
   const [selectedAddOns, setSelectedAddOns] = useState([]);
   const [weight, setWeight] = useState('');
+  const [numberOfPieces, setNumberOfPieces] = useState('');
   const [specialInstructions, setSpecialInstructions] = useState('');
   const [photos, setPhotos] = useState([]);
   
@@ -74,6 +75,7 @@ const ServiceSelection = () => {
     const orderData = {
       service: selectedService,
       weight: weight ? parseFloat(weight) : null, // Allow null weight
+      numberOfPieces: numberOfPieces ? parseInt(numberOfPieces) : null,
       addOns: selectedAddOns,
       specialInstructions,
       photos,
@@ -169,6 +171,27 @@ const ServiceSelection = () => {
           <div className="flex items-center mt-2">
             <div className="text-xs text-gray-500">
               💡 Not sure about weight? Leave blank - we'll weigh during pickup and confirm pricing before processing.
+            </div>
+          </div>
+        </div>
+
+        {/* Number of Pieces Input */}
+        <div>
+          <label htmlFor="numberOfPieces" className="block text-sm font-medium text-gray-700 mb-2">
+            Number of Pieces <span className="text-gray-400">(Optional)</span>
+          </label>
+          <input
+            type="number"
+            id="numberOfPieces"
+            value={numberOfPieces}
+            onChange={(e) => setNumberOfPieces(e.target.value)}
+            className="input-field"
+            placeholder="Enter number of clothing pieces"
+            min="1"
+          />
+          <div className="flex items-center mt-2">
+            <div className="text-xs text-gray-500">
+              💡 Helps us prepare for pickup and provide better service estimates.
             </div>
           </div>
         </div>
@@ -313,14 +336,7 @@ const ServiceSelection = () => {
                   <span className="text-blue-600">UGX {calculateTotal().toLocaleString()}</span>
                 </div>
               </>
-            ) : (
-              <div className="text-center p-4 bg-blue-50 rounded-lg">
-                <p className="text-sm text-blue-700">
-                  💡 <strong>Pricing will be confirmed after pickup</strong><br/>
-                  Final cost will be calculated based on actual weight measured by our staff.
-                </p>
-              </div>
-            )}
+            ) : null}
           </div>
         )}
         <button

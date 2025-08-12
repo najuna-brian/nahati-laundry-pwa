@@ -104,6 +104,18 @@ const AdminDashboard = () => {
                         </div>
                     </div>
                     
+                    <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h3 className="text-lg font-semibold">👨‍💼 Staff Management</h3>
+                                <p className="text-indigo-100 text-sm">Manage staff accounts & roles</p>
+                            </div>
+                            <Link to="/admin/staff" className="bg-white text-indigo-600 px-4 py-2 rounded-lg font-semibold hover:bg-indigo-50">
+                                Manage
+                            </Link>
+                        </div>
+                    </div>
+                    
                     <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
                         <div className="flex items-center justify-between">
                             <div>

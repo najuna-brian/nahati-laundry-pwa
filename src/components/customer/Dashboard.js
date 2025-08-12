@@ -61,21 +61,27 @@ const Dashboard = () => {
       title: "Express Same-Day Service",
       description: "Need it today? Skip the queue with our express wash & delivery",
       image: "/api/placeholder/400/200",
-      color: "bg-gradient-to-r from-blue-500 to-purple-600"
+      color: "bg-gradient-to-r from-blue-500 to-purple-600",
+      link: "https://wa.me/256700000000?text=Hi, I'm interested in your Express Same-Day Service. Can you tell me more?",
+      linkType: "whatsapp"
     },
     {
       id: 2,
       title: "Loyalty Rewards Program",
       description: "Earn points for every order and redeem them for discounts or free washes",
       image: "/api/placeholder/400/200",
-      color: "bg-gradient-to-r from-green-500 to-teal-600"
+      color: "bg-gradient-to-r from-green-500 to-teal-600",
+      link: "https://wa.me/256700000000?text=Hi, I'd like to know more about your Loyalty Rewards Program.",
+      linkType: "whatsapp"
     },
     {
       id: 3,
       title: "Donate & Impact Lives",
       description: "Give clothes or funds to support hospitalized patients and families in slums. Every gift restores hope.",
       image: "/api/placeholder/400/200",
-      color: "bg-gradient-to-r from-orange-500 to-red-600"
+      color: "bg-gradient-to-r from-orange-500 to-red-600",
+      link: "https://laundryimpact.org/",
+      linkType: "external"
     }
   ];
 
@@ -127,9 +133,14 @@ const Dashboard = () => {
               <div className="relative z-10">
                 <h3 className="text-xl font-bold mb-2">{promo.title}</h3>
                 <p className="text-blue-100 mb-4">{promo.description}</p>
-                <button className="bg-white bg-opacity-20 backdrop-blur-sm px-4 py-2 rounded-lg text-white font-medium hover:bg-opacity-30 transition duration-200">
+                <a 
+                  href={promo.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-white bg-opacity-20 backdrop-blur-sm px-4 py-2 rounded-lg text-white font-medium hover:bg-opacity-30 transition duration-200 inline-block"
+                >
                   Learn More
-                </button>
+                </a>
               </div>
               <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-white bg-opacity-10 rounded-full"></div>
             </div>
