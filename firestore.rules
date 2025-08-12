@@ -50,6 +50,12 @@ service cloud.firestore {
         resource.data.userId == request.auth.uid;
     }
     
+    // Inventory collection (admin only)
+    match /inventory/{inventoryId} {
+      allow read, write: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
     // Admin-only collections
     match /admin/{document=**} {
       allow read, write: if request.auth != null && 

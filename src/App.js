@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './services/auth';
 import Layout from './components/shared/Layout';
 import ProtectedRoute from './components/shared/ProtectedRoute';
@@ -16,6 +16,7 @@ import MyOrders from './components/customer/MyOrders';
 import LocationContact from './components/customer/LocationContact';
 import Profile from './components/customer/Profile';
 import AdminLogin from './components/admin/AdminLogin';
+import AdminSetup from './components/admin/AdminSetup';
 import AdminRoutes from './components/admin/AdminRoutes';
 import StaffLogin from './components/staff/StaffLogin';
 import StaffDashboard from './components/staff/StaffDashboard';
@@ -39,7 +40,13 @@ function App() {
       
       const installSkipped = localStorage.getItem('pwa-install-skipped') === 'true';
       
-      if (isStandalone || installSkipped) {
+      // Don't show install prompt for admin/staff routes
+      const currentPath = window.location.pathname;
+      const isAdminOrStaffRoute = currentPath.startsWith('/admin') || 
+                                 currentPath.startsWith('/staff') ||
+                                 currentPath.startsWith('/firebase-setup');
+      
+      if (isStandalone || installSkipped || isAdminOrStaffRoute) {
         setAppInstalled(true);
         setShowInstallPrompt(false);
       }
@@ -89,6 +96,8 @@ function App() {
               <Route path="/services" element={<ServiceSelection />} />
               <Route path="/firebase-setup" element={<FirebaseSetup />} />
               <Route path="/firebase-demo" element={<FirebaseDataDemo />} />
+              <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
+              <Route path="/admin/setup" element={<AdminSetup />} />
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/staff/login" element={<StaffLogin />} />
               <Route path="/customer-invitation/:invitationCode" element={<CustomerInvitation />} />
