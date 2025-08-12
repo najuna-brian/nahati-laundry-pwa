@@ -58,22 +58,22 @@ const Dashboard = () => {
   const promotions = [
     {
       id: 1,
-      title: "20% Off First Order",
-      description: "New customers get 20% off their first laundry service",
+      title: "Express Same-Day Service",
+      description: "Need it today? Skip the queue with our express wash & delivery",
       image: "/api/placeholder/400/200",
       color: "bg-gradient-to-r from-blue-500 to-purple-600"
     },
     {
       id: 2,
-      title: "Express Same-Day Service",
-      description: "Need it done today? Our express service has you covered",
+      title: "Loyalty Rewards Program",
+      description: "Earn points for every order and redeem them for discounts or free washes",
       image: "/api/placeholder/400/200",
       color: "bg-gradient-to-r from-green-500 to-teal-600"
     },
     {
       id: 3,
-      title: "Weekly Laundry Package",
-      description: "Subscribe to our weekly service and save 15%",
+      title: "Donate & Impact Lives",
+      description: "Give clothes or funds to support hospitalized patients and families in slums. Every gift restores hope.",
       image: "/api/placeholder/400/200",
       color: "bg-gradient-to-r from-orange-500 to-red-600"
     }
@@ -117,7 +117,7 @@ const Dashboard = () => {
 
       {/* Promotions Carousel */}
       <div className="px-4 py-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Special Offers</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Featured Services & Impact</h2>
         <div className="space-y-4">
           {promotions.map((promo) => (
             <div
